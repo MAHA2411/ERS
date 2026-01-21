@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="500" height="300" viewBox="0 0 500 300">
+  <!-- Ticket Background Pattern -->
+  <g opacity="0.5">
+    <!-- Dotted Grid -->
+    <g fill="#4e73df" opacity="0.2">
+      <circle cx="25" cy="25" r="2"/>
+      <circle cx="75" cy="25" r="2"/>
+      <circle cx="125" cy="25" r="2"/>
+      <circle cx="175" cy="25" r="2"/>
+      <circle cx="225" cy="25" r="2"/>
+      <circle cx="275" cy="25" r="2"/>
+      <circle cx="325" cy="25" r="2"/>
+      <circle cx="375" cy="25" r="2"/>
+      <circle cx="425" cy="25" r="2"/>
+      <circle cx="475" cy="25" r="2"/>
+      
+      <circle cx="25" cy="75" r="2"/>
+      <circle cx="75" cy="75" r="2"/>
+      <circle cx="125" cy="75" r="2"/>
+      <circle cx="175" cy="75" r="2"/>
+      <circle cx="225" cy="75" r="2"/>
+      <circle cx="275" cy="75" r="2"/>
+      <circle cx="325" cy="75" r="2"/>
+      <circle cx="375" cy="75" r="2"/>
+      <circle cx="425" cy="75" r="2"/>
+      <circle cx="475" cy="75" r="2"/>
+      
+      <circle cx="25" cy="125" r="2"/>
+      <circle cx="75" cy="125" r="2"/>
+      <circle cx="125" cy="125" r="2"/>
+      <circle cx="175" cy="125" r="2"/>
+      <circle cx="225" cy="125" r="2"/>
+      <circle cx="275" cy="125" r="2"/>
+      <circle cx="325" cy="125" r="2"/>
+      <circle cx="375" cy="125" r="2"/>
+      <circle cx="425" cy="125" r="2"/>
+      <circle cx="475" cy="125" r="2"/>
+      
+      <circle cx="25" cy="175" r="2"/>
+      <circle cx="75" cy="175" r="2"/>
+      <circle cx="125" cy="175" r="2"/>
+      <circle cx="175" cy="175" r="2"/>
+      <circle cx="225" cy="175" r="2"/>
+      <circle cx="275" cy="175" r="2"/>
+      <circle cx="325" cy="175" r="2"/>
+      <circle cx="375" cy="175" r="2"/>
+      <circle cx="425" cy="175" r="2"/>
+      <circle cx="475" cy="175" r="2"/>
+      
+      <circle cx="25" cy="225" r="2"/>
+      <circle cx="75" cy="225" r="2"/>
+      <circle cx="125" cy="225" r="2"/>
+      <circle cx="175" cy="225" r="2"/>
+      <circle cx="225" cy="225" r="2"/>
+      <circle cx="275" cy="225" r="2"/>
+      <circle cx="325" cy="225" r="2"/>
+      <circle cx="375" cy="225" r="2"/>
+      <circle cx="425" cy="225" r="2"/>
+      <circle cx="475" cy="225" r="2"/>
+      
+      <circle cx="25" cy="275" r="2"/>
+      <circle cx="75" cy="275" r="2"/>
+      <circle cx="125" cy="275" r="2"/>
+      <circle cx="175" cy="275" r="2"/>
+      <circle cx="225" cy="275" r="2"/>
+      <circle cx="275" cy="275" r="2"/>
+      <circle cx="325" cy="275" r="2"/>
+      <circle cx="375" cy="275" r="2"/>
+      <circle cx="425" cy="275" r="2"/>
+      <circle cx="475" cy="275" r="2"/>
+    </g>
+    
+    <!-- Decorative Elements -->
+    <g stroke="#4e73df" stroke-width="1" fill="none" opacity="0.3">
+      <circle cx="250" cy="150" r="100"/>
+      <circle cx="250" cy="150" r="80"/>
+      <circle cx="250" cy="150" r="60"/>
+      <circle cx="250" cy="150" r="40"/>
+    </g>
+    
+    <!-- Event Icon -->
+    <g transform="translate(250, 150)">
+      <circle cx="0" cy="0" r="30" fill="#4e73df" opacity="0.1"/>
+      <path d="M-15,-15 L15,15 M-15,15 L15,-15" stroke="#4e73df" stroke-width="3" opacity="0.2"/>
+    </g>
+  </g>
+</svg>

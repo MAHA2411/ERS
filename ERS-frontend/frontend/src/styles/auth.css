@@ -1,0 +1,57 @@
+/* src/styles/auth.css */
+.login-container {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background-image: url("../assets/auth-bg.jpg");
+  background-position: center;
+  background-size: cover;
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2rem;
+  border-radius: 15px;
+  backdrop-filter: blur(15px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  width: 350px;
+}
+
+.glass-card input {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  border: none;
+  border-bottom: 1px solid white;
+  background: transparent;
+  color: white;
+}
+
+.login-options {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: white;
+}
+
+.forgot-password {
+  cursor: pointer;
+  text-decoration: underline;
+}
+.btn-gradient {
+  background: linear-gradient(90deg, #6d28d9, #06b6d4);
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.3s ease;
+}
+
+.btn-gradient:hover {
+  opacity: 0.9;
+}
+

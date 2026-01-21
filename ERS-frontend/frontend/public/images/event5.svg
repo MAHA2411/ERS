@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="250" viewBox="0 0 400 250">
+  <!-- Background -->
+  <rect width="400" height="250" fill="#e74a3b"/>
+  
+  <!-- Abstract Business Elements -->
+  <rect x="50" y="50" width="300" height="150" rx="10" fill="#ffffff" fill-opacity="0.1"/>
+  
+  <!-- Network Nodes -->
+  <circle cx="100" cy="80" r="15" fill="#ffffff"/>
+  <circle cx="200" cy="100" r="15" fill="#ffffff"/>
+  <circle cx="300" cy="80" r="15" fill="#ffffff"/>
+  <circle cx="150" cy="150" r="15" fill="#ffffff"/>
+  <circle cx="250" cy="150" r="15" fill="#ffffff"/>
+  
+  <!-- Connection Lines -->
+  <line x1="100" y1="80" x2="200" y2="100" stroke="#ffffff" stroke-width="2"/>
+  <line x1="200" y1="100" x2="300" y2="80" stroke="#ffffff" stroke-width="2"/>
+  <line x1="100" y1="80" x2="150" y2="150" stroke="#ffffff" stroke-width="2"/>
+  <line x1="150" y1="150" x2="200" y2="100" stroke="#ffffff" stroke-width="2"/>
+  <line x1="200" y1="100" x2="250" y2="150" stroke="#ffffff" stroke-width="2"/>
+  <line x1="250" y1="150" x2="300" y2="80" stroke="#ffffff" stroke-width="2"/>
+  <line x1="150" y1="150" x2="250" y2="150" stroke="#ffffff" stroke-width="2"/>
+  
+  <!-- Business Icons -->
+  <g transform="translate(100, 80)">
+    <rect x="-5" y="-5" width="10" height="10" fill="#e74a3b"/>
+  </g>
+  <g transform="translate(200, 100)">
+    <circle cx="0" cy="0" r="5" fill="#e74a3b"/>
+  </g>
+  <g transform="translate(300, 80)">
+    <polygon points="0,-5 5,5 -5,5" fill="#e74a3b"/>
+  </g>
+  <g transform="translate(150, 150)">
+    <rect x="-5" y="-5" width="10" height="10" fill="#e74a3b"/>
+  </g>
+  <g transform="translate(250, 150)">
+    <circle cx="0" cy="0" r="5" fill="#e74a3b"/>
+  </g>
+  
+  <!-- Event Title -->
+  <text x="200" y="200" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#ffffff" text-anchor="middle">Startup Networking Mixer</text>
+</svg>

@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="600" viewBox="0 0 1200 600">
+  <!-- Background gradient -->
+  <defs>
+    <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4a00e0;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8e2de2;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Pattern for background -->
+    <pattern id="pattern" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+      <circle cx="20" cy="20" r="1" fill="#ffffff" opacity="0.3" />
+    </pattern>
+  </defs>
+  
+  <!-- Main background -->
+  <rect width="1200" height="600" fill="url(#bg-gradient)" />
+  
+  <!-- Pattern overlay -->
+  <rect width="1200" height="600" fill="url(#pattern)" />
+  
+  <!-- Abstract shapes -->
+  <circle cx="200" cy="150" r="80" fill="#ffffff" opacity="0.1" />
+  <circle cx="1000" cy="450" r="120" fill="#ffffff" opacity="0.1" />
+  
+  <!-- Decorative lines -->
+  <path d="M100,300 Q400,100 700,350 T1100,300" stroke="#ffffff" stroke-width="2" fill="none" opacity="0.2" />
+  <path d="M100,350 Q400,150 700,400 T1100,350" stroke="#ffffff" stroke-width="2" fill="none" opacity="0.2" />
+  
+  <!-- Event elements -->
+  <g transform="translate(600, 300)" opacity="0.9">
+    <!-- Calendar icon -->
+    <rect x="-40" y="-50" width="80" height="80" rx="10" fill="#ffffff" />
+    <rect x="-30" y="-40" width="60" height="15" fill="#8e2de2" />
+    <circle cx="-20" cy="-45" r="3" fill="#8e2de2" />
+    <circle cx="0" cy="-45" r="3" fill="#8e2de2" />
+    <circle cx="20" cy="-45" r="3" fill="#8e2de2" />
+    <text x="0" y="5" font-family="Arial" font-size="30" font-weight="bold" text-anchor="middle" fill="#4a00e0">28</text>
+    
+    <!-- Ticket -->
+    <g transform="translate(-150, 0)">
+      <rect x="-60" y="-40" width="120" height="80" rx="5" fill="#ffffff" />
+      <path d="M-60,-20 L60,-20" stroke="#4a00e0" stroke-width="2" stroke-dasharray="5,5" />
+      <circle cx="-40" cy="0" r="10" fill="#4a00e0" opacity="0.7" />
+      <circle cx="40" cy="0" r="10" fill="#4a00e0" opacity="0.7" />
+    </g>
+    
+    <!-- Location pin -->
+    <g transform="translate(150, 0)">
+      <path d="M0,-40 C-20,-40 -30,-20 -30,0 C-30,30 0,60 0,60 C0,60 30,30 30,0 C30,-20 20,-40 0,-40 Z" fill="#ffffff" />
+      <circle cx="0" cy="-10" r="10" fill="#4a00e0" />
+    </g>
+  </g>
+  
+  <!-- Event text -->
+  <g transform="translate(600, 450)">
+    <text x="0" y="0" font-family="Arial" font-size="24" font-weight="bold" text-anchor="middle" fill="#ffffff">DISCOVER AMAZING EVENTS</text>
+    <text x="0" y="30" font-family="Arial" font-size="16" text-anchor="middle" fill="#ffffff" opacity="0.8">Connect, Learn, and Celebrate Together</text>
+  </g>
+</svg>

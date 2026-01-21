@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="250" viewBox="0 0 400 250">
+  <!-- Background -->
+  <rect width="400" height="250" fill="#f6c23e"/>
+  
+  <!-- Abstract Marketing Elements -->
+  <circle cx="100" cy="80" r="40" fill="#ffffff" fill-opacity="0.1"/>
+  <circle cx="300" cy="80" r="40" fill="#ffffff" fill-opacity="0.1"/>
+  
+  <!-- Megaphone Icon -->
+  <g transform="translate(170, 60) scale(0.8)">
+    <path d="M10,80 L40,70 L40,30 L10,20 C5,20 0,25 0,30 L0,70 C0,75 5,80 10,80 Z" fill="#ffffff"/>
+    <path d="M40,30 L40,70 L70,85 L70,15 Z" fill="#ffffff"/>
+    <path d="M70,15 L70,85 C90,75 100,60 110,50 C100,40 90,25 70,15 Z" fill="#ffffff" fill-opacity="0.8"/>
+  </g>
+  
+  <!-- Sound Waves -->
+  <path d="M280,50 C290,50 290,60 300,60" stroke="#ffffff" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M280,70 C295,70 295,80 310,80" stroke="#ffffff" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M280,90 C300,90 300,100 320,100" stroke="#ffffff" stroke-width="3" fill="none" stroke-linecap="round"/>
+  
+  <!-- Event Title -->
+  <text x="200" y="160" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#ffffff" text-anchor="middle">Digital Marketing Masterclass</text>
+</svg>
