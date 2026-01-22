@@ -25,7 +25,7 @@ const Navbar = () => {
     } else {
       setUser(null);
     }
-  }, [location.pathname]); // Only run when location changes
+  }, [location.pathname]);
 
   const logout = () => {
     Cookies.remove("token");
@@ -57,12 +57,8 @@ const Navbar = () => {
             </div>
           ) : (
             <>
-              <Link to="/login" className="btn btn-primary" style={{ textDecoration: "none" }}>
-                Login
-              </Link>
-              <Link to="/signup" className="btn btn-primary" style={{ textDecoration: "none" }}>
-                Signup
-              </Link>
+              <Link to="/login" style={{ textDecoration: "none" }} className="btn btn-primary">Login</Link>
+              <Link to="/signup" style={{ textDecoration: "none" }} className="btn btn-primary">Signup</Link>
             </>
           )}
         </div>

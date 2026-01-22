@@ -35,7 +35,7 @@ const UserProtectedRoute = ({ children }) => {
 
   try {
     const decoded = jwtDecode(token);
-    if (decoded.role !== "User") return <Navigate to="/login" replace />;
+    if (decoded.role !== "USER") return <Navigate to="/login" replace />;
     return children;
   } catch (err) {
     Cookies.remove("token");

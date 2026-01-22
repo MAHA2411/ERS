@@ -1,14 +1,16 @@
+// middleware/authMiddleware.js
 import jwt from "jsonwebtoken";
 import Admin from "../models/Admin.js";
 import SuperAdmin from "../models/SuperAdmin.js";
 import User from "../models/User.js";
 
-/* ====================== PROTECT MIDDLEWARE ====================== */
 export const protect = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
+  // ✅ If no token, just mark user as not logged in and continue
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ message: "Authorization token missing" });
+    req.user = null;
+    return next();
   }
 
   try {
@@ -20,13 +22,14 @@ export const protect = async (req, res, next) => {
     if (decoded.role === "SUPER_ADMIN") {
       account = await SuperAdmin.findById(decoded.id).select("-password");
     } else if (decoded.role === "ADMIN" || decoded.role === "SUB_ADMIN") {
-      account = await Admin.findById(decoded.id).populate("role", "name").select("-password");
+      account = await Admin.findById(decoded.id).select("-password");
     } else if (decoded.role === "USER") {
       account = await User.findById(decoded.id).select("-password");
     }
 
     if (!account) {
-      return res.status(401).json({ message: "Account not found" });
+      req.user = null;
+      return next();
     }
 
     req.user = {
@@ -38,13 +41,14 @@ export const protect = async (req, res, next) => {
 
     next();
   } catch (err) {
-    return res.status(401).json({
-      message: err.name === "TokenExpiredError" ? "Token expired" : "Invalid token",
-    });
+    console.error("Auth middleware error:", err);
+    // Token invalid or expired → treat as not logged in
+    req.user = null;
+    next();
   }
 };
 
-/* ====================== ROLE GUARDS ====================== */
+// ====================== ROLE GUARDS ======================
 
 // Only SUPER_ADMIN
 export const verifySuperAdmin = (req, res, next) => {

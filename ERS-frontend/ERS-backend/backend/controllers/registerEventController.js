@@ -1,4 +1,4 @@
-// ERS-backend/controllers/registerEventController.js
+// controllers/registerEventController.js
 import mongoose from "mongoose";
 import PDFDocument from "pdfkit";
 import streamBuffers from "stream-buffers";
@@ -9,7 +9,7 @@ import sendEmail from "../utils/sendEmail.js";
 
 /**
  * POST /api/register-event
- * Requires auth (protect). Body: { eventId, name, email, phone?, college?, department?, year? }
+ * Requires auth. Body: { eventId, name, email, phone?, college?, department?, year? }
  */
 export const registerEvent = async (req, res) => {
   const session = await mongoose.startSession();
@@ -45,13 +45,8 @@ export const registerEvent = async (req, res) => {
       [
         {
           user: userId,
-          eventId,
-          name,
-          email,
-          phone,
-          college,
-          department,
-          year,
+          event: eventId, // use correct field
+          participant: { name, email, phone, college, department, year },
           ticketId,
         },
       ],
@@ -116,19 +111,19 @@ export const registerEvent = async (req, res) => {
 
 /**
  * GET /api/register-event/mine
- * Returns all registrations of logged-in user
+ * Returns all events the logged-in user registered for
  */
 export const getMyRegisteredEvents = async (req, res) => {
   try {
     const userId = req.user?._id;
-    if (!userId) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
     const registrations = await Registration.find({ user: userId })
-      .populate("eventId", "title date venue price image");
+      .populate("event", "title date venue fee image"); // correct field
 
-    return res.json(registrations);
+    const events = registrations.map((reg) => reg.event).filter((e) => e);
+
+    return res.json(events);
   } catch (err) {
     console.error("Error fetching registered events:", err);
     return res.status(500).json({ message: "Failed to fetch registered events" });
