@@ -1,78 +1,117 @@
 import express from "express";
 import { protect, verifySuperAdmin } from "../middleware/authMiddleware.js";
+
 import Admin from "../models/Admin.js";
+import Role from "../models/Role.js";
 import Event from "../models/Event.js";
-import User from "../models/User.js";
 import Registration from "../models/Registration.js";
 
-const router = express.Router();
-
-/* ================================
-   SUPERADMIN PROFILE & DASHBOARD
-================================ */
 import {
   getSuperAdminProfile,
   getSuperAdminDashboard
 } from "../controllers/superAdminController.js";
 
+const router = express.Router();
+
+/* ================= SUPERADMIN PROFILE & DASHBOARD ================= */
 router.get("/profile", protect, verifySuperAdmin, getSuperAdminProfile);
 router.get("/dashboard", protect, verifySuperAdmin, getSuperAdminDashboard);
 
-/* ================================
-   MANAGE ADMINS
-================================ */
-// CREATE ADMIN
+/* ================= CREATE ADMIN / SUB-ADMIN ================= */
 router.post("/admin", protect, verifySuperAdmin, async (req, res) => {
   try {
-    const { name, email, password } = req.body;
-    if (!name || !email || !password) return res.status(400).json({ message: "Missing fields" });
+    const { name, email, password, roleName } = req.body;
+
+    if (!name || !email || !password || !roleName) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
 
     const existing = await Admin.findOne({ email });
-    if (existing) return res.status(400).json({ message: "Admin already exists" });
+    if (existing) {
+      return res.status(400).json({ message: "Admin already exists" });
+    }
 
-    const admin = await Admin.create({ name, email, password });
-    res.status(201).json({ success: true, admin });
+    const role = await Role.findOne({ name: roleName });
+    if (!role) return res.status(404).json({ message: "Invalid role" });
+
+    const admin = await Admin.create({
+      name,
+      email,
+      password,
+      role: role._id,
+      createdBy: req.user._id
+    });
+
+    res.status(201).json({
+      success: true,
+      admin: {
+        id: admin._id,
+        name: admin.name,
+        email: admin.email,
+        role: role.name
+      }
+    });
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    res.status(500).json({ message: err.message });
   }
 });
 
-// GET ALL ADMINS
+/* ================= VIEW ADMINS ================= */
 router.get("/admins", protect, verifySuperAdmin, async (req, res) => {
-  const admins = await Admin.find().select("-password");
-  res.status(200).json({ success: true, admins });
+  try {
+    const admins = await Admin.find()
+      .populate("role", "name")
+      .select("-password");
+
+    res.json({ success: true, admins });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
-// UPDATE ADMIN
+/* ================= UPDATE ADMIN ================= */
 router.put("/admin/:id", protect, verifySuperAdmin, async (req, res) => {
-  const admin = await Admin.findById(req.params.id);
-  if (!admin) return res.status(404).json({ message: "Admin not found" });
+  try {
+    const admin = await Admin.findById(req.params.id);
+    if (!admin) return res.status(404).json({ message: "Admin not found" });
 
-  Object.assign(admin, req.body);
-  await admin.save();
-  res.status(200).json({ success: true, admin });
+    if (req.body.roleName) {
+      const role = await Role.findOne({ name: req.body.roleName });
+      if (!role) return res.status(404).json({ message: "Role not found" });
+      admin.role = role._id;
+    }
+
+    admin.name = req.body.name || admin.name;
+    admin.email = req.body.email || admin.email;
+
+    await admin.save();
+    res.json({ success: true, admin });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
-// DELETE ADMIN
+/* ================= DELETE ADMIN ================= */
 router.delete("/admin/:id", protect, verifySuperAdmin, async (req, res) => {
-  const admin = await Admin.findById(req.params.id);
-  if (!admin) return res.status(404).json({ message: "Admin not found" });
+  try {
+    const admin = await Admin.findById(req.params.id);
+    if (!admin) return res.status(404).json({ message: "Admin not found" });
 
-  await admin.remove();
-  res.status(200).json({ success: true, message: "Admin deleted" });
+    await admin.deleteOne();
+    res.json({ success: true, message: "Admin deleted" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
-/* ================================
-   MANAGE EVENTS
-================================ */
-// CREATE EVENT
+/* ================= CREATE EVENT ================= */
 router.post("/event", protect, verifySuperAdmin, async (req, res) => {
   try {
     const { title, description, date, location, assignedAdmin } = req.body;
-    if (!title || !date || !assignedAdmin) return res.status(400).json({ message: "Missing fields" });
 
-    const admin = await Admin.findById(assignedAdmin);
-    if (!admin) return res.status(404).json({ message: "Assigned admin not found" });
+    if (!title || !date || !assignedAdmin) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
 
     const event = await Event.create({
       title,
@@ -85,43 +124,46 @@ router.post("/event", protect, verifySuperAdmin, async (req, res) => {
 
     res.status(201).json({ success: true, event });
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    res.status(500).json({ message: err.message });
   }
 });
 
-// GET ALL EVENTS
+/* ================= VIEW EVENTS ================= */
 router.get("/events", protect, verifySuperAdmin, async (req, res) => {
-  const events = await Event.find().populate("assignedAdmin", "name email");
-  res.status(200).json({ success: true, events });
+  try {
+    const events = await Event.find().populate("assignedAdmin", "name email");
+    res.json({ success: true, events });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
-// UPDATE EVENT
-router.put("/event/:id", protect, verifySuperAdmin, async (req, res) => {
-  const event = await Event.findById(req.params.id);
-  if (!event) return res.status(404).json({ message: "Event not found" });
+/* ================= EVENTS WITH PARTICIPANTS ================= */
+router.get(
+  "/events-with-participants",
+  protect,
+  verifySuperAdmin,
+  async (req, res) => {
+    try {
+      const events = await Event.find()
+        .populate("assignedAdmin", "name email")
+        .lean();
 
-  Object.assign(event, req.body);
-  await event.save();
-  res.status(200).json({ success: true, event });
-});
+      for (let event of events) {
+        const regs = await Registration.find({ eventId: event._id }).populate(
+          "user",
+          "name email"
+        );
 
-// DELETE EVENT
-router.delete("/event/:id", protect, verifySuperAdmin, async (req, res) => {
-  const event = await Event.findById(req.params.id);
-  if (!event) return res.status(404).json({ message: "Event not found" });
+        event.participants = regs.map((r) => r.user);
+        event.participantCount = event.participants.length;
+      }
 
-  await event.remove();
-  res.status(200).json({ success: true, message: "Event deleted" });
-});
-
-/* ================================
-   VIEW REGISTRATIONS
-================================ */
-router.get("/registrations", protect, verifySuperAdmin, async (req, res) => {
-  const registrations = await Registration.find()
-    .populate("user", "name email")
-    .populate("eventId", "title date location");
-  res.status(200).json({ success: true, registrations });
-});
+      res.json({ success: true, events });
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  }
+);
 
 export default router;

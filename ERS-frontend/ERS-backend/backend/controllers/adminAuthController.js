@@ -8,42 +8,40 @@ export const loginAdminOrSuperAdmin = async (req, res) => {
     const email = req.body.email?.toLowerCase().trim();
     const { password } = req.body;
 
-    if (!email || !password) {
+    if (!email || !password)
       return res.status(400).json({ message: "Email and password required" });
-    }
 
+    // Check SUPER_ADMIN first
     let user = await SuperAdmin.findOne({ email });
-    let role = "SUPER_ADMIN";
+    let roleName = "SUPER_ADMIN";
 
+    // If not found, check Admin
     if (!user) {
-      user = await Admin.findOne({ email });
-      role = "ADMIN";
-    }
-
-    if (!user) {
-      return res.status(401).json({ message: "Invalid credentials" });
+      user = await Admin.findOne({ email }).populate("role", "name");
+      if (!user || !user.role)
+        return res.status(401).json({ message: "Invalid credentials" });
+      roleName = user.role.name; // ADMIN or SUB_ADMIN
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ message: "Invalid credentials" });
-    }
+    if (!isMatch) return res.status(401).json({ message: "Invalid credentials" });
 
-    const token = jwt.sign(
-      { id: user._id, role },
-      process.env.JWT_SECRET,
-      { expiresIn: "1d" }
-    );
+    const token = jwt.sign({ id: user._id, role: roleName }, process.env.JWT_SECRET, {
+      expiresIn: "1d",
+    });
 
-    res.json({
+    res.status(200).json({
+      success: true,
       token,
       user: {
         id: user._id,
         name: user.name,
-        role,
+        email: user.email,
+        role: roleName,
       },
     });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Login failed" });
   }
 };

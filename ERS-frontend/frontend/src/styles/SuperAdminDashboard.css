@@ -1,7 +1,5 @@
-/* SuperAdminDashboard.css */
-
 /* =============================
-   GENERAL STYLING
+   GENERAL
 ============================= */
 body {
   font-family: "Roboto", sans-serif;
@@ -13,14 +11,14 @@ body {
 
 .dashboard {
   max-width: 1200px;
-  margin: 20px auto;
+  margin: 24px auto;
   padding: 0 20px;
 }
 
 h1 {
   font-size: 2rem;
-  margin-bottom: 20px;
-  color: #1f2937; /* dark grey */
+  margin-bottom: 24px;
+  color: #1f2937;
 }
 
 /* =============================
@@ -35,50 +33,50 @@ h1 {
 
 .card {
   padding: 20px;
-  border-radius: 12px;
+  border-radius: 14px;
   color: #fff;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  transition: all 0.25s ease;
 }
 
 .card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  transform: translateY(-6px);
+  box-shadow: 0 12px 26px rgba(0,0,0,0.15);
 }
 
 .card h3 {
-  font-size: 1.1rem;
-  margin-bottom: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-size: 0.9rem;
+  letter-spacing: 1px;
+  opacity: 0.9;
+  margin-bottom: 8px;
 }
 
 .card p {
-  font-size: 1.8rem;
-  font-weight: 600;
+  font-size: 2rem;
+  font-weight: 700;
 }
 
-/* Colors */
-.card.blue { background: #3b82f6; }      /* Blue */
-.card.green { background: #10b981; }     /* Green */
-.card.purple { background: #8b5cf6; }    /* Purple */
-.card.orange { background: #f59e0b; }    /* Orange */
+/* ✅ FIXED class names */
+.card-blue   { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+.card-green  { background: linear-gradient(135deg, #10b981, #059669); }
+.card-purple { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+.card-orange { background: linear-gradient(135deg, #f59e0b, #d97706); }
 
 /* =============================
    CHART
 ============================= */
 .chart-box {
   background: #fff;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  padding: 24px;
+  border-radius: 14px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
   margin-bottom: 40px;
 }
 
 .chart-box h2 {
   margin-bottom: 20px;
-  color: #1f2937;
   font-size: 1.3rem;
+  color: #1f2937;
 }
 
 /* =============================
@@ -86,15 +84,22 @@ h1 {
 ============================= */
 .table-box {
   background: #fff;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  padding: 24px;
+  border-radius: 14px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  margin-bottom: 40px;
 }
 
-.table-box h2 {
-  margin-bottom: 20px;
-  color: #1f2937;
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.table-header h2 {
   font-size: 1.3rem;
+  color: #1f2937;
 }
 
 table {
@@ -107,51 +112,133 @@ thead {
 }
 
 thead th {
+  padding: 14px;
   text-align: left;
-  padding: 12px 15px;
+  font-size: 0.9rem;
   font-weight: 600;
   color: #374151;
 }
 
 tbody td {
-  padding: 12px 15px;
+  padding: 14px;
   border-bottom: 1px solid #e5e7eb;
+  font-size: 0.95rem;
 }
 
 tbody tr:hover {
   background-color: #f9fafb;
 }
 
-tbody tr td:first-child {
-  font-weight: 500;
-  color: #1f2937;
+/* =============================
+   BUTTONS
+============================= */
+.btn {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.btn-primary {
+  background: #4f46e5;
+  color: #fff;
+}
+
+.btn-edit {
+  background: #e0e7ff;
+  color: #3730a3;
+  margin-right: 6px;
+}
+
+.btn-delete {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* =============================
+   MODAL (FIXED)
+============================= */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.modal-content {
+  background: #fff;
+  width: 520px;
+  max-height: 90vh;
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+  position: relative;
+  overflow-y: auto;
+}
+
+.modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  border: none;
+  background: #f3f4f6;
+  border-radius: 50%;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+/* Modal form */
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.modal-form label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.modal-form input,
+.modal-form textarea,
+.modal-form select {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  font-size: 0.9rem;
 }
 
 /* =============================
    RESPONSIVE
 ============================= */
 @media (max-width: 768px) {
-  .cards {
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  .modal-content {
+    width: 95%;
   }
 
   table, thead, tbody, th, td, tr {
     display: block;
   }
 
-  thead tr {
+  thead {
     display: none;
   }
 
   tbody tr {
-    margin-bottom: 15px;
+    margin-bottom: 14px;
     border: 1px solid #e5e7eb;
-    border-radius: 8px;
+    border-radius: 10px;
     padding: 10px;
   }
 
   tbody td {
-    padding: 8px 10px;
+    padding: 8px;
     text-align: right;
     position: relative;
   }
@@ -161,8 +248,6 @@ tbody tr td:first-child {
     position: absolute;
     left: 10px;
     font-weight: 600;
-    text-transform: uppercase;
     color: #374151;
-    text-align: left;
   }
 }

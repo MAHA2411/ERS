@@ -1,14 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "../api/axios";
 import "../styles/SuperAdminDashboard.css";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer
-} from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
 // Modal Component
 const Modal = ({ show, onClose, children }) => {
@@ -37,7 +30,7 @@ const SuperAdminDashboard = () => {
     assignedAdmin: ""
   });
 
-  // Load data
+  // ✅ Fetch dashboard & admins
   useEffect(() => {
     fetchDashboard();
     fetchAdmins();
@@ -45,9 +38,30 @@ const SuperAdminDashboard = () => {
 
   const fetchDashboard = async () => {
     try {
-      const res = await axios.get("/superadmin/dashboard");
-      setStats(res.data.stats);
-      setEvents(res.data.eventStats);
+      const res = await axios.get("/superadmin/events-with-participants"); // Fixed endpoint
+      const eventsData = res.data.events || [];
+
+      setEvents(
+        eventsData.map((e) => ({
+          _id: e._id,
+          title: e.title,
+          date: e.date,
+          location: e.location,
+          assignedAdmin: e.assignedAdmin || null,
+          participantCount: e.participantCount || 0,
+          participants: e.participants || [],
+        }))
+      );
+
+      // Optional stats
+      setStats({
+        totalEvents: eventsData.length,
+        totalRegistrations: eventsData.reduce((sum, e) => sum + e.participantCount, 0),
+        totalAdmins: admins.filter(a => a.role === "ADMIN").length,
+        totalSubAdmins: admins.filter(a => a.role === "SUB_ADMIN").length,
+        revenue: 0 // update if you have revenue field
+      });
+
     } catch (err) {
       console.error("Dashboard load failed", err);
     }
@@ -56,7 +70,7 @@ const SuperAdminDashboard = () => {
   const fetchAdmins = async () => {
     try {
       const res = await axios.get("/superadmin/admins");
-      setAdmins(res.data.admins);
+      setAdmins(res.data.admins || []);
     } catch (err) {
       console.error("Admins load failed", err);
     }
@@ -72,9 +86,9 @@ const SuperAdminDashboard = () => {
       setEditingEvent(event);
       setForm({
         title: event.title,
-        description: event.description,
+        description: event.description || "",
         date: new Date(event.date).toISOString().slice(0, 16),
-        location: event.location,
+        location: event.location || "",
         assignedAdmin: event.assignedAdmin?._id || ""
       });
     } else {
@@ -127,7 +141,7 @@ const SuperAdminDashboard = () => {
         </div>
         <div className="card card-purple">
           <h3>Admins</h3>
-          <p>{stats.totalAdmins}</p>
+          <p>{stats.totalAdmins + stats.totalSubAdmins}</p>
         </div>
         <div className="card card-orange">
           <h3>Revenue</h3>
@@ -140,10 +154,10 @@ const SuperAdminDashboard = () => {
         <h2>Participants per Event</h2>
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={events}>
-            <XAxis dataKey="eventName" />
+            <XAxis dataKey="title" />
             <YAxis />
             <Tooltip />
-            <Bar dataKey="participants" fill="#4e73df" />
+            <Bar dataKey="participantCount" fill="#4e73df" />
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -152,9 +166,7 @@ const SuperAdminDashboard = () => {
       <div className="table-box">
         <div className="table-header">
           <h2>Events</h2>
-          <button className="btn btn-primary" onClick={() => openModal()}>
-            + Create Event
-          </button>
+          <button className="btn btn-primary" onClick={() => openModal()}>+ Create Event</button>
         </div>
         <table>
           <thead>
