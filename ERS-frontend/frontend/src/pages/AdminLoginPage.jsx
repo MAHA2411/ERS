@@ -3,30 +3,42 @@ import { useNavigate, useLocation } from "react-router-dom";
 import axios from "../api/axios";
 import Cookies from "js-cookie";
 import { toast } from "react-toastify";
+import Navbar from "../components/Navbar";
+import "../styles/register.css";
 
 const AdminLoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const redirectTo = location.state?.from || "/superadmin/dashboard";
+  const redirectTo = location.state?.from || "/admin/dashboard";
 
-  const [form, setForm] = useState({ email: "", password: "", remember: false });
-  const [loading, setLoading] = useState(false);
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+    remember: false,
+  });
+
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
+    // If already logged in as admin/superadmin, redirect
     const token = Cookies.get("token");
     const role = Cookies.get("role");
-    if (token && role === "SUPER_ADMIN") navigate("/superadmin/dashboard", { replace: true });
-    if (token && role === "ADMIN") navigate("/admin/dashboard", { replace: true });
-  }, [navigate]);
+    const path = location.pathname;
 
-  const handleChange = (e) => {
+    if (token && (role === "ADMIN" || role === "SUPER_ADMIN") && path !== "/admin/login") {
+      if (role === "SUPER_ADMIN") navigate("/superadmin/dashboard", { replace: true });
+      else navigate("/admin/dashboard", { replace: true });
+    }
+  }, [navigate, location.pathname]);
+
+  const handle = (e) => {
     const { name, value, type, checked } = e.target;
     setForm({ ...form, [name]: type === "checkbox" ? checked : value });
   };
 
-  const handleSubmit = async (e) => {
+  const submit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    setIsLoading(true);
 
     try {
       const res = await axios.post("/auth/admin/login", {
@@ -34,27 +46,104 @@ const AdminLoginPage = () => {
         password: form.password,
       });
 
+      if (!res.data.token || !res.data.user?.role) {
+        toast.error("Login failed: invalid response");
+        return;
+      }
+
+      // ✅ Store token and role
       Cookies.set("token", res.data.token, { expires: form.remember ? 7 : undefined });
       Cookies.set("role", res.data.user.role);
-      Cookies.set("name", res.data.user.name);
+      Cookies.set("name", res.data.user.name || "");
 
-      toast.success("Login successful!");
+      toast.success("🎉 Login successful!");
 
-      if (res.data.user.role === "SUPER_ADMIN") navigate("/superadmin/dashboard");
-      else navigate("/admin/dashboard");
+      // ✅ Redirect based on role
+      if (res.data.user.role === "SUPER_ADMIN") {
+        navigate("/superadmin/dashboard", { replace: true });
+      } else {
+        navigate("/admin/dashboard", { replace: true });
+      }
     } catch (err) {
       toast.error(err?.response?.data?.message || "Login failed");
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <input type="email" name="email" value={form.email} onChange={handleChange} required />
-      <input type="password" name="password" value={form.password} onChange={handleChange} required />
-      <button type="submit">{loading ? "Signing In..." : "Sign In"}</button>
-    </form>
+    <>
+      <Navbar showUser={false} />
+
+      <div className="signup-container">
+        <div className="signup-background">
+          <div className="signup-overlay"></div>
+        </div>
+
+        <div className="signup-card">
+          <div className="signup-header">
+            <div className="signup-icon">🛡️</div>
+            <h2>Admin Login</h2>
+            <p>Sign in to manage events</p>
+          </div>
+
+          <form onSubmit={submit} className="signup-form">
+            <div className="form-group">
+              <label>Email Address</label>
+              <input
+                type="email"
+                name="email"
+                value={form.email}
+                onChange={handle}
+                required
+                className="signup-input"
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Password</label>
+              <input
+                type="password"
+                name="password"
+                value={form.password}
+                onChange={handle}
+                required
+                className="signup-input"
+              />
+            </div>
+
+            <div className="form-options">
+              <label className="checkbox-container">
+                <input
+                  type="checkbox"
+                  name="remember"
+                  checked={form.remember}
+                  onChange={handle}
+                />
+                <span className="checkmark"></span>
+                Remember me
+              </label>
+
+              <button
+                type="button"
+                onClick={() => navigate("/forgot-password")}
+                className="forgot-password-link"
+              >
+                Forgot password?
+              </button>
+            </div>
+
+            <button
+              type="submit"
+              className={`signup-button ${isLoading ? "loading" : ""}`}
+              disabled={isLoading}
+            >
+              {isLoading ? "Signing In..." : "Sign In"}
+            </button>
+          </form>
+        </div>
+      </div>
+    </>
   );
 };
 
