@@ -55,7 +55,7 @@ export const registerEvent = async (req, res) => {
     }
 
     const { eventId, name, email, phone, college, department, year, teamName, teamMembers } = req.body;
-    
+
     if (!eventId || !name || !email) {
       await session.abortTransaction();
       session.endSession();
@@ -80,15 +80,15 @@ export const registerEvent = async (req, res) => {
       if (!teamMembers || teamMembers.length < (event.minTeamSize - 1)) {
         await session.abortTransaction();
         session.endSession();
-        return res.status(400).json({ 
-          message: `Team must have at least ${event.minTeamSize} members (including you)` 
+        return res.status(400).json({
+          message: `Team must have at least ${event.minTeamSize} members (including you)`
         });
       }
       if (teamMembers.length > (event.maxTeamSize - 1)) {
         await session.abortTransaction();
         session.endSession();
-        return res.status(400).json({ 
-          message: `Team cannot have more than ${event.maxTeamSize} members` 
+        return res.status(400).json({
+          message: `Team cannot have more than ${event.maxTeamSize} members`
         });
       }
     }
@@ -167,7 +167,7 @@ export const registerEvent = async (req, res) => {
 export const getMyRegisteredEvents = async (req, res) => {
   try {
     const userId = req.user?._id;
-    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+    if (!userId) return res.json([]);
 
     const registrations = await Registration.find({ user: userId })
       .populate("event", "title date venue location fee bannerUrl isTeamEvent");

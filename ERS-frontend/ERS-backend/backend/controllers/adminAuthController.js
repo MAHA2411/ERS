@@ -17,10 +17,9 @@ export const loginAdminOrSuperAdmin = async (req, res) => {
 
     // If not found, check Admin
     if (!user) {
-      user = await Admin.findOne({ email }).populate("role", "name");
-      if (!user || !user.role)
-        return res.status(401).json({ message: "Invalid credentials" });
-      roleName = user.role.name; // ADMIN or SUB_ADMIN
+      user = await Admin.findOne({ email });
+      if (!user) return res.status(401).json({ message: "Invalid credentials" });
+      roleName = user.role; // ADMIN or SUB_ADMIN
     }
 
     const isMatch = await bcrypt.compare(password, user.password);

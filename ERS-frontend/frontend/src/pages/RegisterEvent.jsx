@@ -38,13 +38,13 @@ const RegisterEvent = () => {
         const token = Cookies.get("token");
         if (token) {
           try {
-            const regRes = await axios.get(
-              `/events/${eventId}/is-registered`,
-              { headers: { Authorization: `Bearer ${token}` } }
-            );
+            const regRes = await axios.get(`/events/${eventId}/is-registered`);
             setRegistered(regRes.data.registered);
           } catch (err) {
             console.error("Check registration error:", err);
+            if (err.response && err.response.status === 401) {
+              Cookies.remove("token");
+            }
             setRegistered(false);
           }
         }
@@ -92,11 +92,11 @@ const RegisterEvent = () => {
 
     try {
       const payload = { eventId, ...form };
-      
+
       if (event?.isTeamEvent) {
         payload.teamName = teamName;
         payload.teamMembers = teamMembers.filter(m => m.name && m.email);
-        
+
         if (payload.teamMembers.length < (event.minTeamSize - 1)) {
           toast.error(`Team must have at least ${event.minTeamSize} members (including you)`);
           return;
@@ -105,18 +105,23 @@ const RegisterEvent = () => {
 
       const res = await axios.post(
         "/register-event",
-        payload,
-        { headers: { Authorization: `Bearer ${token}` } }
+        payload
       );
 
       toast.success("Registered successfully! Check your email for confirmation.");
       setRegistered(true);
-      
+
       if (res.data.registrationId) {
-        navigate(`/success/${res.data.registrationId}`);
+        navigate("/events");
       }
     } catch (err) {
       console.error("Registration error:", err);
+      if (err.response && err.response.status === 401) {
+        toast.error("Session expired. Please login again.");
+        Cookies.remove("token");
+        navigate("/login");
+        return;
+      }
       toast.error(err?.response?.data?.message || "Registration failed");
     }
   };
@@ -150,7 +155,7 @@ const RegisterEvent = () => {
           ) : (
             <form className="signup-form" onSubmit={handleSubmit}>
               <h3>Your Details (Team Leader)</h3>
-              
+
               <div className="form-group">
                 <label>Full Name *</label>
                 <input
@@ -220,7 +225,7 @@ const RegisterEvent = () => {
                 <>
                   <hr />
                   <h3>Team Details</h3>
-                  
+
                   <div className="form-group">
                     <label>Team Name *</label>
                     <input
@@ -232,11 +237,11 @@ const RegisterEvent = () => {
                   </div>
 
                   <h4>Team Members ({teamMembers.length} of {event.maxTeamSize - 1} max)</h4>
-                  
+
                   {teamMembers.map((member, idx) => (
                     <div key={idx} className="team-member-card">
                       <h5>Member {idx + 1}</h5>
-                      
+
                       <div className="form-group">
                         <label>Name *</label>
                         <input
@@ -246,7 +251,7 @@ const RegisterEvent = () => {
                           required
                         />
                       </div>
-                      
+
                       <div className="form-group">
                         <label>Email *</label>
                         <input
@@ -257,7 +262,7 @@ const RegisterEvent = () => {
                           required
                         />
                       </div>
-                      
+
                       <div className="form-group">
                         <label>Phone</label>
                         <input
@@ -266,7 +271,7 @@ const RegisterEvent = () => {
                           onChange={(e) => handleTeamMemberChange(idx, "phone", e.target.value)}
                         />
                       </div>
-                      
+
                       <div className="form-group">
                         <label>College</label>
                         <input
@@ -275,10 +280,10 @@ const RegisterEvent = () => {
                           onChange={(e) => handleTeamMemberChange(idx, "college", e.target.value)}
                         />
                       </div>
-                      
+
                       {teamMembers.length > event.minTeamSize - 1 && (
-                        <button 
-                          type="button" 
+                        <button
+                          type="button"
                           className="btn-remove-member"
                           onClick={() => removeTeamMember(idx)}
                         >
@@ -289,8 +294,8 @@ const RegisterEvent = () => {
                   ))}
 
                   {teamMembers.length < event.maxTeamSize - 1 && (
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       className="btn-add-member"
                       onClick={addTeamMember}
                     >

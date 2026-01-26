@@ -9,7 +9,7 @@ import { protect, requireAuth } from "../middleware/authMiddleware.js";
 const router = express.Router();
 
 router.post("/", protect, requireAuth, registerEvent);
-router.get("/mine", protect, requireAuth, getMyRegisteredEvents);
+router.get("/mine", protect, getMyRegisteredEvents);
 router.get("/user/registrations", protect, requireAuth, getMyRegisteredEvents);
 router.put("/cancel/:registrationId", protect, requireAuth, cancelRegistration);
 

@@ -20,6 +20,7 @@ router.get("/mine", protect, getMyRegisteredEvents);
 // Check if user registered
 router.get("/:eventId/is-registered", protect, async (req, res) => {
   try {
+    if (!req.user) return res.json({ registered: false });
     const exists = await Registration.findOne({
       event: req.params.eventId,
       user: req.user._id,

@@ -13,7 +13,7 @@ const Navbar = () => {
     if (token) {
       try {
         const decoded = jwtDecode(token);
-        if (decoded.role === "User") {
+        if (decoded.role === "USER") {
           setUser({ name: decoded.name, email: decoded.email });
         } else {
           setUser(null);
@@ -45,7 +45,6 @@ const Navbar = () => {
         <div className="nav-links">
           <Link to="/">Home</Link>
           <Link to="/events">Events</Link>
-          {user && <Link to="/profile">Profile</Link>}
         </div>
         <div className="auth-buttons">
           {user ? (

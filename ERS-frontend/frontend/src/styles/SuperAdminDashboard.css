@@ -35,13 +35,13 @@ h1 {
   padding: 20px;
   border-radius: 14px;
   color: #fff;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
   transition: all 0.25s ease;
 }
 
 .card:hover {
   transform: translateY(-6px);
-  box-shadow: 0 12px 26px rgba(0,0,0,0.15);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.15);
 }
 
 .card h3 {
@@ -57,10 +57,26 @@ h1 {
 }
 
 /* ✅ FIXED class names */
-.card-blue   { background: linear-gradient(135deg, #3b82f6, #2563eb); }
-.card-green  { background: linear-gradient(135deg, #10b981, #059669); }
-.card-purple { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
-.card-orange { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.card-blue {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+.card-green {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.card-teal {
+  background: linear-gradient(135deg, #14b8a6, #0d9488);
+  color: #fff;
+}
+
+.card-purple {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+}
+
+.card-orange {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
 
 /* =============================
    CHART
@@ -69,7 +85,7 @@ h1 {
   background: #fff;
   padding: 24px;
   border-radius: 14px;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
   margin-bottom: 40px;
 }
 
@@ -86,7 +102,7 @@ h1 {
   background: #fff;
   padding: 24px;
   border-radius: 14px;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
   margin-bottom: 40px;
 }
 
@@ -146,6 +162,11 @@ tbody tr:hover {
   color: #fff;
 }
 
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(229, 46, 113, 0.4);
+}
+
 .btn-edit {
   background: #e0e7ff;
   color: #3730a3;
@@ -163,7 +184,7 @@ tbody tr:hover {
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.55);
+  background: rgba(0, 0, 0, 0.55);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -176,7 +197,7 @@ tbody tr:hover {
   max-height: 90vh;
   padding: 24px;
   border-radius: 16px;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
   position: relative;
   overflow-y: auto;
 }
@@ -215,6 +236,32 @@ tbody tr:hover {
 }
 
 /* =============================
+   TABS
+============================= */
+.tabs {
+  margin-bottom: 24px;
+}
+
+.tabs button {
+  padding: 10px 24px;
+  background: #e5e7eb;
+  border: none;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  border-radius: 8px;
+  margin-right: 12px;
+  transition: all 0.3s ease;
+}
+
+.tabs button.active {
+  background: linear-gradient(90deg, #ff8a00, #e52e71);
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(229, 46, 113, 0.3);
+}
+
+/* =============================
    RESPONSIVE
 ============================= */
 @media (max-width: 768px) {
@@ -222,7 +269,12 @@ tbody tr:hover {
     width: 95%;
   }
 
-  table, thead, tbody, th, td, tr {
+  table,
+  thead,
+  tbody,
+  th,
+  td,
+  tr {
     display: block;
   }
 

@@ -1,152 +1,249 @@
+// backend/controllers/superAdminController.js
 import Admin from "../models/Admin.js";
-import User from "../models/User.js";
 import Event from "../models/Event.js";
 import Registration from "../models/Registration.js";
-import Payment from "../models/Payment.js";
-import Role from "../models/Role.js";
+import bcrypt from "bcryptjs";
+import { generateCSV, generatePDF } from "../utils/fileGenerator.js";
 
-/* =====================================================
-   SUPER ADMIN PROFILE
-===================================================== */
-export const getSuperAdminProfile = async (req, res) => {
+// ----------- EVENTS -----------
+
+export const getAllEventsWithParticipants = async (req, res) => {
   try {
-    if (!req.user || req.user.role.name !== "SUPER_ADMIN") {
-      return res.status(403).json({
-        success: false,
-        message: "Access denied",
-      });
-    }
+    const events = await Event.find()
+      .populate("subAdmins", "name email")
+      .populate("createdBy", "name email");
 
-    res.status(200).json({
-      success: true,
-      user: {
-        id: req.user._id,
-        name: req.user.name,
-        email: req.user.email,
-        role: "SUPER_ADMIN",
-        createdAt: req.user.createdAt,
-      },
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Failed to load profile",
-    });
-  }
-};
+    const eventsWithCount = await Promise.all(
+      events.map(async (e) => {
+        const participantCount = await Registration.countDocuments({ event: e._id });
+        return { ...e._doc, participantCount };
+      })
+    );
 
-
-export const getAllAdmins = async (req, res) => {
-  try {
-    const admins = await Admin.find()
-      .populate("role", "name")        // 🔑 FIX
-      .populate("createdBy", "name");  // optional
-
-    res.json(admins);
+    res.json({ events: eventsWithCount });
   } catch (err) {
-    res.status(500).json({ message: "Failed to fetch admins" });
+    res.status(500).json({ message: err.message });
   }
 };
 
-/* =====================================================
-   SUPER ADMIN DASHBOARD
-===================================================== */
-export const getSuperAdminDashboard = async (req, res) => {
+export const createEvent = async (req, res) => {
   try {
-    /* 🔐 STRICT AUTH CHECK */
-    if (!req.user || req.user.role.name !== "SUPER_ADMIN") {
-      return res.status(403).json({
-        success: false,
-        message: "Access denied",
-      });
+    const event = await Event.create({
+      ...req.body,
+      createdBy: req.user._id,
+    });
+
+    // Assign this event to SubAdmins
+    if (req.body.subAdmins?.length) {
+      await Admin.updateMany(
+        { _id: { $in: req.body.subAdmins } },
+        { $addToSet: { assignedEvents: event._id } }
+      );
     }
 
-    /* ============================
-       ROLE IDS
-    ============================ */
-    const adminRole = await Role.findOne({ name: "ADMIN" });
-    const subAdminRole = await Role.findOne({ name: "SUB_ADMIN" });
+    res.status(201).json({ event });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
 
-    const totalAdmins = adminRole
-      ? await Admin.countDocuments({ role: adminRole._id })
-      : 0;
+export const updateEvent = async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id);
+    if (!event) return res.status(404).json({ message: "Event not found" });
 
-    const totalSubAdmins = subAdminRole
-      ? await Admin.countDocuments({ role: subAdminRole._id })
-      : 0;
+    Object.assign(event, req.body);
+    await event.save();
 
-    /* ============================
-       COUNTS (REAL-TIME)
-    ============================ */
-    const totalUsers = await User.countDocuments();
+    // Update SubAdmin assignments
+    if (req.body.subAdmins) {
+      // Remove from old subadmins
+      await Admin.updateMany(
+        { assignedEvents: event._id },
+        { $pull: { assignedEvents: event._id } }
+      );
+      // Add to new subadmins
+      await Admin.updateMany(
+        { _id: { $in: req.body.subAdmins } },
+        { $addToSet: { assignedEvents: event._id } }
+      );
+    }
+
+    res.json({ event });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+export const deleteEvent = async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id);
+    if (!event) return res.status(404).json({ message: "Event not found" });
+
+    await event.deleteOne();
+
+    // Remove from all SubAdmins
+    await Admin.updateMany(
+      { assignedEvents: event._id },
+      { $pull: { assignedEvents: event._id } }
+    );
+
+    res.json({ message: "Event deleted" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// ----------- SUBADMIN MANAGEMENT -----------
+
+export const getAllSubAdmins = async (req, res) => {
+  try {
+    const subAdmins = await Admin.find({ role: "SUB_ADMIN" });
+    res.json({ subAdmins });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+export const createSubAdmin = async (req, res) => {
+  try {
+    const { name, email, password, assignedEvents = [] } = req.body;
+
+    const existing = await Admin.findOne({ email });
+    if (existing) return res.status(400).json({ message: "Email already exists" });
+
+    // const hashedPassword = await bcrypt.hash(password, 10); // Let model handle hashing
+
+    const subAdmin = await Admin.create({
+      name,
+      email,
+      password, // Plain text, model will hash
+      role: "SUB_ADMIN",
+      assignedEvents,
+      createdBy: req.user._id,
+    });
+
+    // Assign this SubAdmin to events
+    if (assignedEvents.length) {
+      await Event.updateMany(
+        { _id: { $in: assignedEvents } },
+        { $addToSet: { subAdmins: subAdmin._id } }
+      );
+    }
+
+    res.status(201).json({ subAdmin });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+export const updateSubAdmin = async (req, res) => {
+  try {
+    const subAdmin = await Admin.findById(req.params.id);
+    if (!subAdmin) return res.status(404).json({ message: "SubAdmin not found" });
+
+    const { name, email, password, assignedEvents } = req.body;
+
+    subAdmin.name = name || subAdmin.name;
+    subAdmin.email = email || subAdmin.email;
+    if (password) subAdmin.password = password; // Model will hash this
+
+    if (assignedEvents) {
+      // Remove this subAdmin from old events
+      await Event.updateMany(
+        { subAdmins: subAdmin._id },
+        { $pull: { subAdmins: subAdmin._id } }
+      );
+      // Add to new events
+      await Event.updateMany(
+        { _id: { $in: assignedEvents } },
+        { $addToSet: { subAdmins: subAdmin._id } }
+      );
+      subAdmin.assignedEvents = assignedEvents;
+    }
+
+    await subAdmin.save();
+    res.json({ subAdmin });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+export const deleteSubAdmin = async (req, res) => {
+  try {
+    const subAdmin = await Admin.findById(req.params.id);
+    if (!subAdmin) return res.status(404).json({ message: "SubAdmin not found" });
+
+    // Remove from assigned events
+    await Event.updateMany(
+      { subAdmins: subAdmin._id },
+      { $pull: { subAdmins: subAdmin._id } }
+    );
+
+    await subAdmin.deleteOne();
+    res.json({ message: "SubAdmin deleted" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// ----------- PARTICIPANTS -----------
+
+export const getEventParticipants = async (req, res) => {
+  try {
+    const registrations = await Registration.find({ event: req.params.id }).populate("user");
+    res.json({ registrations });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+export const downloadParticipantsCSV = async (req, res) => {
+  try {
+    const registrations = await Registration.find({ event: req.params.id });
+    const csv = generateCSV(registrations);
+    res.header("Content-Type", "text/csv");
+    res.attachment("participants.csv");
+    res.send(csv);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+export const downloadParticipantsPDF = async (req, res) => {
+  try {
+    const registrations = await Registration.find({ event: req.params.id });
+    const pdfBuffer = await generatePDF(registrations);
+    res.header("Content-Type", "application/pdf");
+    res.attachment("participants.pdf");
+    res.send(pdfBuffer);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// ----------- ANALYTICS -----------
+
+export const getAnalytics = async (req, res) => {
+  try {
     const totalEvents = await Event.countDocuments();
     const totalRegistrations = await Registration.countDocuments();
+    const totalSubAdmins = await Admin.countDocuments({ role: "SUB_ADMIN" });
 
-    /* ============================
-       REVENUE
-    ============================ */
-    const revenueResult = await Payment.aggregate([
-      { $match: { status: "SUCCESS" } },
-      {
-        $group: {
-          _id: null,
-          total: { $sum: "$amount" },
-        },
-      },
-    ]);
+    const techEvents = await Event.countDocuments({ category: "TECH" });
+    const nonTechEvents = await Event.countDocuments({ category: "NON_TECH" });
 
-    const revenue = revenueResult.length > 0 ? revenueResult[0].total : 0;
-
-    /* ============================
-       EVENT LIST + PARTICIPANTS
-    ============================ */
-    const events = await Event.find()
-      .populate("assignedAdmin", "name")
-      .lean();
-
-    const registrations = await Registration.aggregate([
-      {
-        $group: {
-          _id: "$eventId",
-          count: { $sum: 1 },
-        },
-      },
-    ]);
-
-    const registrationMap = {};
-    registrations.forEach(item => {
-      registrationMap[item._id.toString()] = item.count;
-    });
-
-    const eventStats = events.map(event => ({
-      eventId: event._id,
-      eventName: event.title,
-      date: event.date,
-      venue: event.location,
-      assignedAdmin: event.assignedAdmin?.name || "Not Assigned",
-      participants: registrationMap[event._id.toString()] || 0,
-    }));
-
-    /* ============================
-       RESPONSE
-    ============================ */
-    res.status(200).json({
-      success: true,
-      stats: {
-        totalAdmins,
-        totalSubAdmins,
-        totalUsers,
+    res.json({
+      analytics: {
         totalEvents,
         totalRegistrations,
-        revenue,
-      },
-      eventStats,
+        totalSubAdmins,
+        techEvents,
+        nonTechEvents,
+        revenue: 0
+      }
     });
-  } catch (error) {
-    console.error("SuperAdmin dashboard error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to load dashboard",
-    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };

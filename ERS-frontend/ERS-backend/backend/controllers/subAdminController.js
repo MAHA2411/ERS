@@ -1,208 +1,78 @@
+// backend/controllers/subAdminController.js
 import Event from "../models/Event.js";
 import Registration from "../models/Registration.js";
-import PDFDocument from "pdfkit";
+import Admin from "../models/Admin.js";
+import { generateCSV, generatePDF } from "../utils/fileGenerator.js";
 
-/* ================================
-   SUB ADMIN DASHBOARD
-================================ */
-export const getSubAdminDashboard = async (req, res) => {
+// Get only events assigned to this SubAdmin
+export const getAssignedEvents = async (req, res) => {
   try {
-    const subAdminId = req.user._id;
+    const subAdmin = await Admin.findById(req.user._id).populate("assignedEvents");
 
-    const assignedEvents = await Event.find({
-      $or: [
-        { assignedSubAdmins: subAdminId },
-        { assignedAdmin: subAdminId }
-      ]
-    }).lean();
-
-    const eventIds = assignedEvents.map(e => e._id);
-
-    const totalRegistrations = await Registration.countDocuments({
-      event: { $in: eventIds }
-    });
-
-    const eventStats = await Promise.all(
-      assignedEvents.map(async event => {
-        const participantCount = await Registration.countDocuments({
-          event: event._id
-        });
-        return { ...event, participantCount };
+    // Calculate participant count for each assigned event
+    const eventsWithCount = await Promise.all(
+      subAdmin.assignedEvents.map(async (e) => {
+        const participantCount = await Registration.countDocuments({ event: e._id });
+        return { ...e._doc, participantCount };
       })
     );
 
-    res.json({
-      success: true,
-      stats: {
-        totalEvents: assignedEvents.length,
-        totalRegistrations
-      },
-      events: eventStats
-    });
+    res.json({ events: eventsWithCount });
   } catch (err) {
-    console.error("SubAdmin dashboard error:", err);
-    res.status(500).json({ message: "Failed to load dashboard" });
+    res.status(500).json({ message: err.message });
   }
 };
 
-/* ================================
-   ASSIGNED EVENTS
-================================ */
-export const getAssignedEvents = async (req, res) => {
-  try {
-    const subAdminId = req.user._id;
-
-    const events = await Event.find({
-      $or: [
-        { assignedSubAdmins: subAdminId },
-        { assignedAdmin: subAdminId }
-      ]
-    })
-      .populate("assignedAdmin", "name email")
-      .lean();
-
-    res.json({ success: true, events });
-  } catch {
-    res.status(500).json({ message: "Failed to fetch events" });
-  }
-};
-
-/* ================================
-   EVENT PARTICIPANTS
-================================ */
+// Get participants for an event if assigned to this SubAdmin
 export const getEventParticipants = async (req, res) => {
   try {
-    const subAdminId = req.user._id;
-    const eventId = req.params.eventId;
+    const subAdmin = await Admin.findById(req.user._id);
 
-    const event = await Event.findOne({
-      _id: eventId,
-      $or: [
-        { assignedSubAdmins: subAdminId },
-        { assignedAdmin: subAdminId }
-      ]
-    });
+    const assignedEventIds = subAdmin.assignedEvents.map(e => e.toString());
+    if (!assignedEventIds.includes(req.params.id)) {
+      return res.status(403).json({ message: "Not assigned to this event" });
+    }
 
-    if (!event)
-      return res.status(403).json({ message: "Not authorized" });
-
-    const registrations = await Registration.find({ event: eventId })
-      .populate("user", "name email phone college department year")
-      .lean();
-
-    res.json({ success: true, registrations });
-  } catch {
-    res.status(500).json({ message: "Failed to fetch participants" });
+    const registrations = await Registration.find({ event: req.params.id });
+    res.json({ registrations });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };
 
-/* ================================
-   DOWNLOAD CSV
-================================ */
+// CSV / PDF
 export const downloadParticipantsCSV = async (req, res) => {
   try {
-    const subAdminId = req.user._id;
-    const eventId = req.params.eventId;
+    const subAdmin = await Admin.findById(req.user._id);
+    const assignedEventIds = subAdmin.assignedEvents.map(e => e.toString());
+    if (!assignedEventIds.includes(req.params.id)) {
+      return res.status(403).json({ message: "Not assigned to this event" });
+    }
 
-    const event = await Event.findOne({
-      _id: eventId,
-      $or: [
-        { assignedSubAdmins: subAdminId },
-        { assignedAdmin: subAdminId }
-      ]
-    });
-
-    if (!event)
-      return res.status(403).json({ message: "Not authorized" });
-
-    const registrations = await Registration.find({ event: eventId })
-      .populate("user", "name email phone college department year")
-      .lean();
-
-    let csv =
-      "Ticket ID,Name,Email,Phone,College,Department,Year,Team Name,Team Members,Status,Registered At\n";
-
-    registrations.forEach(reg => {
-      const teamMembers =
-        reg.teamMembers?.map(m => `${m.name}(${m.email})`).join("; ") || "";
-
-      csv += `"${reg.ticketId}",
-"${reg.user?.name || ""}",
-"${reg.user?.email || ""}",
-"${reg.user?.phone || ""}",
-"${reg.user?.college || ""}",
-"${reg.user?.department || ""}",
-"${reg.user?.year || ""}",
-"${reg.teamName || ""}",
-"${teamMembers}",
-"${reg.status}",
-"${new Date(reg.createdAt).toLocaleString()}"\n`;
-    });
-
-    res.setHeader("Content-Type", "text/csv");
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename=participants-${event.title.replace(/\s+/g, "_")}.csv`
-    );
+    const registrations = await Registration.find({ event: req.params.id });
+    const csv = generateCSV(registrations);
+    res.header("Content-Type", "text/csv");
+    res.attachment("participants.csv");
     res.send(csv);
-  } catch {
-    res.status(500).json({ message: "Failed to generate CSV" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };
 
-/* ================================
-   DOWNLOAD PDF
-================================ */
 export const downloadParticipantsPDF = async (req, res) => {
   try {
-    const subAdminId = req.user._id;
-    const eventId = req.params.eventId;
+    const subAdmin = await Admin.findById(req.user._id);
+    const assignedEventIds = subAdmin.assignedEvents.map(e => e.toString());
+    if (!assignedEventIds.includes(req.params.id)) {
+      return res.status(403).json({ message: "Not assigned to this event" });
+    }
 
-    const event = await Event.findOne({
-      _id: eventId,
-      $or: [
-        { assignedSubAdmins: subAdminId },
-        { assignedAdmin: subAdminId }
-      ]
-    });
-
-    if (!event)
-      return res.status(403).json({ message: "Not authorized" });
-
-    const registrations = await Registration.find({ event: eventId })
-      .populate("user", "name email")
-      .lean();
-
-    const doc = new PDFDocument({ margin: 50 });
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename=participants-${event.title.replace(/\s+/g, "_")}.pdf`
-    );
-
-    doc.pipe(res);
-
-    doc.fontSize(18).text(`Participants - ${event.title}`, { align: "center" });
-    doc.moveDown();
-
-    registrations.forEach((reg, i) => {
-      doc.fontSize(10).text(
-        `${i + 1}. ${reg.user?.name || "N/A"} - ${
-          reg.user?.email || "N/A"
-        } - ${reg.ticketId}`
-      );
-
-      if (reg.teamMembers?.length) {
-        doc.text(
-          `   Team: ${reg.teamName || "N/A"} | Members: ${reg.teamMembers
-            .map(m => m.name)
-            .join(", ")}`
-        );
-      }
-    });
-
-    doc.end();
-  } catch {
-    res.status(500).json({ message: "Failed to generate PDF" });
+    const registrations = await Registration.find({ event: req.params.id });
+    const pdfBuffer = await generatePDF(registrations);
+    res.header("Content-Type", "application/pdf");
+    res.attachment("participants.pdf");
+    res.send(pdfBuffer);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };

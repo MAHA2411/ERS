@@ -18,13 +18,11 @@ const EventCard = ({ event }) => {
       if (!token) return;
 
       try {
-        const res = await axios.get(`/events/${event._id}/is-registered`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await axios.get(`/events/${event._id}/is-registered`);
         setRegistered(res.data.registered);
       } catch (err) {
         console.error("Check registration error:", err);
-        toast.error("Failed to check registration status");
+        // toast.error("Failed to check registration status"); // Silent fail is better here
       }
     };
 

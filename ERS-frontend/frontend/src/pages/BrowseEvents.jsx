@@ -19,6 +19,7 @@ const BrowseEvents = () => {
 
         // If user logged in, fetch their registered events
         const token = Cookies.get("token");
+
         if (token) {
           try {
             const regRes = await axios.get("/register-event/mine", {
@@ -32,6 +33,10 @@ const BrowseEvents = () => {
             setRegisteredEventIds(registeredIds);
           } catch (regErr) {
             console.error("Failed to fetch registrations:", regErr);
+            if (regErr.response && regErr.response.status === 401) {
+              // Token invalid/expired
+              Cookies.remove("token");
+            }
           }
         }
       } catch (err) {
@@ -59,7 +64,6 @@ const BrowseEvents = () => {
               <EventCard
                 key={event._id}
                 event={event}
-                isRegistered={isRegistered}
               />
             );
           })}

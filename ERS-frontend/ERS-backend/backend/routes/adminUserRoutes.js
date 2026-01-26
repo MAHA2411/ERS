@@ -1,4 +1,4 @@
-import express from "express";
+/*import express from "express";
 import { protect, verifySuperAdmin } from "../middleware/authMiddleware.js";
 import { getAdmins, addAdmin, updateAdmin, deleteAdmin } from "../controllers/adminUserController.js";
 
@@ -12,4 +12,4 @@ router.post("/", addAdmin);
 router.put("/:id", updateAdmin);
 router.delete("/:id", deleteAdmin);
 
-export default router;
+export default router;*/

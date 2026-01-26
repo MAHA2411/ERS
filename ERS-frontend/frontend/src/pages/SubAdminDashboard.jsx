@@ -15,9 +15,18 @@ const SubAdminDashboard = () => {
 
   const fetchDashboard = async () => {
     try {
-      const res = await axios.get("/subadmin/dashboard");
-      setStats(res.data.stats);
-      setEvents(res.data.events || []);
+      const res = await axios.get("/subadmin/my-events");
+      const fetchedEvents = res.data.events || [];
+      setEvents(fetchedEvents);
+
+      // Calculate stats locally
+      const totalEvents = fetchedEvents.length;
+      const totalRegistrations = fetchedEvents.reduce((acc, curr) => acc + (curr.participantCount || 0), 0);
+
+      setStats({
+        totalEvents,
+        totalRegistrations
+      });
       setLoading(false);
     } catch (err) {
       console.error("Dashboard load failed", err);
@@ -35,12 +44,40 @@ const SubAdminDashboard = () => {
     }
   };
 
-  const downloadCSV = (eventId) => {
-    window.open(`${axios.defaults.baseURL}/subadmin/events/${eventId}/download/csv`, '_blank');
+  const downloadCSV = async (eventId) => {
+    try {
+      const response = await axios.get(`/subadmin/events/${eventId}/download/csv`, {
+        responseType: 'blob',
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'participants.csv');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      console.error("Download failed:", error);
+      alert("Failed to download CSV");
+    }
   };
 
-  const downloadPDF = (eventId) => {
-    window.open(`${axios.defaults.baseURL}/subadmin/events/${eventId}/download/pdf`, '_blank');
+  const downloadPDF = async (eventId) => {
+    try {
+      const response = await axios.get(`/subadmin/events/${eventId}/download/pdf`, {
+        responseType: 'blob',
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'participants.pdf');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      console.error("Download failed:", error);
+      alert("Failed to download PDF");
+    }
   };
 
   if (loading) return <p>Loading dashboard...</p>;
@@ -129,7 +166,18 @@ const SubAdminDashboard = () => {
                     <td>{p.participant?.email}</td>
                     <td>{p.participant?.phone || '-'}</td>
                     <td>{p.participant?.college || '-'}</td>
-                    <td>{p.isTeamRegistration ? p.teamName || 'Team' : '-'}</td>
+                    <td>
+                      {p.isTeamRegistration ? (
+                        <div>
+                          <strong>{p.teamName || "Team"}</strong>
+                          <ul style={{ margin: 0, paddingLeft: "15px", fontSize: "0.85em" }}>
+                            {p.teamMembers?.map((m, idx) => (
+                              <li key={idx}>{m.name} ({m.email})</li>
+                            ))}
+                          </ul>
+                        </div>
+                      ) : '-'}
+                    </td>
                     <td>{p.status}</td>
                   </tr>
                 ))

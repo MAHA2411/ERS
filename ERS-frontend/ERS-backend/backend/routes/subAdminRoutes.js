@@ -1,21 +1,24 @@
 import express from "express";
-import { protect, verifySubAdmin } from "../middleware/authMiddleware.js";
 import {
-  getSubAdminDashboard,
   getAssignedEvents,
   getEventParticipants,
   downloadParticipantsCSV,
   downloadParticipantsPDF
 } from "../controllers/subAdminController.js";
 
+import { protect, protectSubAdmin } from "../middleware/authMiddleware.js";
+
 const router = express.Router();
 
-router.use(protect, verifySubAdmin);
+// ---------- SubAdmin protected routes ----------
+router.use(protect, protectSubAdmin);
 
-router.get("/dashboard", getSubAdminDashboard);
-router.get("/events", getAssignedEvents);
-router.get("/events/:eventId/participants", getEventParticipants);
-router.get("/events/:eventId/download/csv", downloadParticipantsCSV);
-router.get("/events/:eventId/download/pdf", downloadParticipantsPDF);
+// Only see events assigned to this SubAdmin
+router.get("/my-events", getAssignedEvents);
+
+// Participants for a specific event (only assigned events)
+router.get("/events/:id/participants", getEventParticipants);
+router.get("/events/:id/download/csv", downloadParticipantsCSV);
+router.get("/events/:id/download/pdf", downloadParticipantsPDF);
 
 export default router;

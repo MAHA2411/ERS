@@ -1,58 +1,81 @@
+// models/Event.js
 import mongoose from "mongoose";
 
 const eventSchema = new mongoose.Schema(
   {
-    title: { type: String, required: true },
-    description: String,
-    date: { type: Date, required: true },
-    location: String,
-    venue: String,
-    fee: { type: Number, default: 0 },
+    title: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    description: {
+      type: String,
+      trim: true,
+    },
+
+    date: {
+      type: Date,
+      required: true,
+    },
+
+    location: {
+      type: String,
+      trim: true,
+    },
+
+    venue: {
+      type: String,
+      trim: true,
+    },
+
+    fee: {
+      type: Number,
+      default: 0,
+    },
+
     bannerUrl: String,
-    capacity: { type: Number, default: 100 },
-    
+
+    capacity: {
+      type: Number,
+      default: 100,
+    },
+
     category: {
       type: String,
       enum: ["TECH", "NON_TECH"],
-      default: "TECH"
+      required: true,
     },
 
     isTeamEvent: {
       type: Boolean,
-      default: false
+      default: false,
     },
 
     minTeamSize: {
       type: Number,
-      default: 2
+      default: 2,
     },
 
     maxTeamSize: {
       type: Number,
-      default: 5
+      default: 5,
     },
 
-    createdBy: { 
-      type: mongoose.Schema.Types.ObjectId, 
-      refPath: "createdByModel",
-      required: true 
-    },
-
-    createdByModel: {
-      type: String,
-      enum: ["SuperAdmin", "Admin"],
-      default: "SuperAdmin"
-    },
-
-    assignedAdmin: { 
-      type: mongoose.Schema.Types.ObjectId, 
-      ref: "Admin"
-    },
-
-    assignedSubAdmins: [{
+    // ✅ SuperAdmin who created the event
+    createdBy: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Admin"
-    }]
+      ref: "SuperAdmin",
+      required: true,
+    },
+
+    // ✅ MANY SubAdmins for ONE event
+    subAdmins: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Admin", // Changed from SubAdmin to Admin
+      },
+    ],
   },
   { timestamps: true }
 );

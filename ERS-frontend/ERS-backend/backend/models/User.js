@@ -1,36 +1,31 @@
-// models/User.js
+// backend/models/User.js
 import mongoose from "mongoose";
-import bcrypt from "bcryptjs";
 
 const userSchema = new mongoose.Schema(
   {
+    name: {
+      type: String,
+      required: true,
+    },
     email: {
       type: String,
       required: true,
       unique: true,
-      lowercase: true,
-      trim: true,
     },
-
     password: {
       type: String,
       required: true,
     },
-
-    resetPasswordToken: String,
-    resetPasswordExpire: Date,
+    role: {
+      type: String,
+      enum: ["USER", "SUB_ADMIN", "SUPER_ADMIN"],
+      default: "USER",
+    },
   },
   { timestamps: true }
 );
 
-// Hash password
-userSchema.pre("save", async function () {
-  if (!this.isModified("password")) return;
-  this.password = await bcrypt.hash(this.password, 10);
-});
+// ✅ IMPORTANT FIX
+const User = mongoose.models.User || mongoose.model("User", userSchema);
 
-userSchema.methods.matchPassword = function (enteredPassword) {
-  return bcrypt.compare(enteredPassword, this.password);
-};
-
-export default mongoose.model("User", userSchema);
+export default User;

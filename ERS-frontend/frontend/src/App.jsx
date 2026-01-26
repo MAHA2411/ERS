@@ -16,11 +16,11 @@ import SignupPage from "./pages/SignupPage";
 import LoginPage from "./pages/LoginPage";
 import BrowseEvents from "./pages/BrowseEvents";
 import RegisterEvent from "./pages/RegisterEvent";
-import SuccessPage from "./pages/SuccessPage";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import AdminLoginPage from "./pages/AdminLoginPage";
 import AdminDashboard from "./pages/AdminDashboard";
+import SubAdminDashboard from "./pages/SubAdminDashboard";
 import SuperAdminDashboard from "./pages/SuperAdminDashboard";
 import Profile from "./pages/Profile";
 
@@ -31,7 +31,7 @@ import Profile from "./pages/Profile";
 // ✅ User-only routes
 const UserProtectedRoute = ({ children }) => {
   const token = Cookies.get("token");
-  
+
   if (!token) return <Navigate to="/login" replace />;
 
   try {
@@ -47,7 +47,7 @@ const UserProtectedRoute = ({ children }) => {
 // ✅ Admin-only routes (Admin or SuperAdmin)
 const AdminProtectedRoute = ({ children }) => {
   const token = Cookies.get("token");
-  
+
   if (!token) return <Navigate to="/admin/login" replace />;
 
   try {
@@ -97,14 +97,7 @@ function App() {
             </UserProtectedRoute>
           }
         />
-        <Route
-          path="/success/:registrationId"
-          element={
-            <UserProtectedRoute>
-              <SuccessPage />
-            </UserProtectedRoute>
-          }
-        />
+
 
         {/* ADMIN / SUPERADMIN */}
         <Route path="/admin/login" element={<AdminLoginPage />} />
@@ -112,7 +105,7 @@ function App() {
           path="/admin/dashboard"
           element={
             <AdminProtectedRoute>
-              <AdminDashboard />
+              <SubAdminDashboard />
             </AdminProtectedRoute>
           }
         />

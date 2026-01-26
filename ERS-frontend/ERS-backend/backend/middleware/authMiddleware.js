@@ -1,8 +1,12 @@
+// backend/middleware/authMiddleware.js
 import jwt from "jsonwebtoken";
 import Admin from "../models/Admin.js";
 import SuperAdmin from "../models/SuperAdmin.js";
 import User from "../models/User.js";
 
+/**
+ * Decode JWT and attach user info to req.user
+ */
 export const protect = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
@@ -19,9 +23,10 @@ export const protect = async (req, res, next) => {
 
     if (decoded.role === "SUPER_ADMIN") {
       account = await SuperAdmin.findById(decoded.id).select("-password");
-    } else if (decoded.role === "ADMIN" || decoded.role === "SUB_ADMIN") {
-      account = await Admin.findById(decoded.id).select("-password").populate("role", "name");
-    } else if (decoded.role === "USER") {
+    } else if (decoded.role === "SUB_ADMIN") {
+      account = await Admin.findById(decoded.id).select("-password");
+    } else {
+      // Default / User
       account = await User.findById(decoded.id).select("-password");
     }
 
@@ -34,9 +39,8 @@ export const protect = async (req, res, next) => {
       _id: account._id,
       name: account.name,
       email: account.email,
-      role: decoded.role, // ✅ Keep role as ADMIN/SUB_ADMIN/SUPER_ADMIN
-      category: account.category || "ALL",
-      assignedEvents: account.assignedEvents || []
+      role: decoded.role, // SUPER_ADMIN / SUB_ADMIN
+      assignedEvents: account.assignedEvents || [], // for SubAdmin
     };
 
     next();
@@ -47,41 +51,23 @@ export const protect = async (req, res, next) => {
   }
 };
 
-export const verifySuperAdmin = (req, res, next) => {
+// SuperAdmin only
+export const protectSuperAdmin = (req, res, next) => {
   if (!req.user || req.user.role !== "SUPER_ADMIN") {
-    return res.status(403).json({ message: "Super Admin access only" });
+    return res.status(403).json({ message: "SuperAdmin access only" });
   }
   next();
 };
 
-export const verifyAdmin = (req, res, next) => {
-  if (!req.user || req.user.role !== "ADMIN") {
-    return res.status(403).json({ message: "Admin access only" });
-  }
-  next();
-};
-
-export const verifySubAdmin = (req, res, next) => {
+// SubAdmin only
+export const protectSubAdmin = (req, res, next) => {
   if (!req.user || req.user.role !== "SUB_ADMIN") {
-    return res.status(403).json({ message: "Sub Admin access only" });
+    return res.status(403).json({ message: "SubAdmin access only" });
   }
   next();
 };
 
-export const verifyAdminOrSuperAdmin = (req, res, next) => {
-  if (!req.user || !["ADMIN", "SUPER_ADMIN"].includes(req.user.role)) {
-    return res.status(403).json({ message: "Admin access only" });
-  }
-  next();
-};
-
-export const verifyAnyAdmin = (req, res, next) => {
-  if (!req.user || !["ADMIN", "SUB_ADMIN", "SUPER_ADMIN"].includes(req.user.role)) {
-    return res.status(403).json({ message: "Admin access required" });
-  }
-  next();
-};
-
+// Require login (any authenticated user)
 export const requireAuth = (req, res, next) => {
   if (!req.user) {
     return res.status(401).json({ message: "Authentication required" });
