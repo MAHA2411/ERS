@@ -1,5 +1,13 @@
-// models/Registration.js
 import mongoose from "mongoose";
+
+const teamMemberSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  email: { type: String, required: true },
+  phone: { type: String },
+  college: { type: String },
+  department: { type: String },
+  year: { type: String }
+}, { _id: false });
 
 const registrationSchema = new mongoose.Schema(
   {
@@ -23,6 +31,17 @@ const registrationSchema = new mongoose.Schema(
       department: { type: String },
       year: { type: String },
     },
+
+    isTeamRegistration: {
+      type: Boolean,
+      default: false
+    },
+
+    teamName: {
+      type: String
+    },
+
+    teamMembers: [teamMemberSchema],
 
     ticketId: {
       type: String,

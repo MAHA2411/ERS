@@ -10,7 +10,7 @@ import eventRoutes from "./routes/eventRoutes.js";
 import registerEventRoutes from "./routes/registerEventRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import superAdminRoutes from "./routes/superAdminRoutes.js";
-
+import subAdminRoutes from "./routes/subAdminRoutes.js";
 dotenv.config();
 connectDB();
 
@@ -41,5 +41,6 @@ app.use("/api/user", userRoutes);
 
 // SuperAdmin routes under same /api/admin prefix
 app.use("/api/superadmin", superAdminRoutes);
+app.use("/api/subadmin", subAdminRoutes);
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

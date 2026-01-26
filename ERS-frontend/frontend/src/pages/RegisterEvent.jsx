@@ -21,26 +21,26 @@ const RegisterEvent = () => {
     department: "",
     year: "",
   });
+  const [teamName, setTeamName] = useState("");
+  const [teamMembers, setTeamMembers] = useState([]);
 
-  // =======================
-  // Load Event & Registration Status
-  // =======================
   useEffect(() => {
     const loadEvent = async () => {
       try {
-        // Fetch event details
         const eventRes = await axios.get(`/events/${eventId}`);
         setEvent(eventRes.data);
 
-        // Fetch registration status if logged in
+        if (eventRes.data.isTeamEvent) {
+          const minMembers = (eventRes.data.minTeamSize || 2) - 1;
+          setTeamMembers(Array(minMembers).fill({ name: "", email: "", phone: "", college: "" }));
+        }
+
         const token = Cookies.get("token");
         if (token) {
           try {
             const regRes = await axios.get(
               `/events/${eventId}/is-registered`,
-              {
-                headers: { Authorization: `Bearer ${token}` },
-              }
+              { headers: { Authorization: `Bearer ${token}` } }
             );
             setRegistered(regRes.data.registered);
           } catch (err) {
@@ -50,7 +50,7 @@ const RegisterEvent = () => {
         }
       } catch (err) {
         console.error("Load event error:", err);
-        toast.error("Failed to load event or registrations");
+        toast.error("Failed to load event");
       } finally {
         setLoading(false);
       }
@@ -59,11 +59,26 @@ const RegisterEvent = () => {
     loadEvent();
   }, [eventId]);
 
-  // =======================
-  // Form Handlers
-  // =======================
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleTeamMemberChange = (index, field, value) => {
+    const updated = [...teamMembers];
+    updated[index] = { ...updated[index], [field]: value };
+    setTeamMembers(updated);
+  };
+
+  const addTeamMember = () => {
+    if (teamMembers.length < (event?.maxTeamSize || 5) - 1) {
+      setTeamMembers([...teamMembers, { name: "", email: "", phone: "", college: "" }]);
+    }
+  };
+
+  const removeTeamMember = (index) => {
+    if (teamMembers.length > (event?.minTeamSize || 2) - 1) {
+      setTeamMembers(teamMembers.filter((_, i) => i !== index));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -76,25 +91,36 @@ const RegisterEvent = () => {
     }
 
     try {
-      await axios.post(
-        "/register-event",
-        { eventId, ...form },
-        {
-          headers: { Authorization: `Bearer ${token}` },
+      const payload = { eventId, ...form };
+      
+      if (event?.isTeamEvent) {
+        payload.teamName = teamName;
+        payload.teamMembers = teamMembers.filter(m => m.name && m.email);
+        
+        if (payload.teamMembers.length < (event.minTeamSize - 1)) {
+          toast.error(`Team must have at least ${event.minTeamSize} members (including you)`);
+          return;
         }
+      }
+
+      const res = await axios.post(
+        "/register-event",
+        payload,
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      toast.success("Registered successfully!");
+      toast.success("Registered successfully! Check your email for confirmation.");
       setRegistered(true);
+      
+      if (res.data.registrationId) {
+        navigate(`/success/${res.data.registrationId}`);
+      }
     } catch (err) {
       console.error("Registration error:", err);
       toast.error(err?.response?.data?.message || "Registration failed");
     }
   };
 
-  // =======================
-  // Loading state
-  // =======================
   if (loading) return (
     <>
       <Navbar />
@@ -110,16 +136,23 @@ const RegisterEvent = () => {
           <div className="signup-header">
             <h2>Register for {event?.title}</h2>
             <p>{event?.description}</p>
+            {event?.isTeamEvent && (
+              <p className="team-info">
+                Team Event - {event.minTeamSize} to {event.maxTeamSize} members required
+              </p>
+            )}
           </div>
 
           {registered ? (
             <button className="signup-button" disabled>
-              ✅ Registered
+              Registered
             </button>
           ) : (
             <form className="signup-form" onSubmit={handleSubmit}>
+              <h3>Your Details (Team Leader)</h3>
+              
               <div className="form-group">
-                <label>Full Name</label>
+                <label>Full Name *</label>
                 <input
                   className="signup-input"
                   name="name"
@@ -130,7 +163,7 @@ const RegisterEvent = () => {
               </div>
 
               <div className="form-group">
-                <label>Email</label>
+                <label>Email *</label>
                 <input
                   className="signup-input"
                   type="email"
@@ -142,22 +175,24 @@ const RegisterEvent = () => {
               </div>
 
               <div className="form-group">
-                <label>Phone</label>
+                <label>Phone *</label>
                 <input
                   className="signup-input"
                   name="phone"
                   value={form.phone}
                   onChange={handleChange}
+                  required
                 />
               </div>
 
               <div className="form-group">
-                <label>College</label>
+                <label>College *</label>
                 <input
                   className="signup-input"
                   name="college"
                   value={form.college}
                   onChange={handleChange}
+                  required
                 />
               </div>
 
@@ -181,8 +216,92 @@ const RegisterEvent = () => {
                 />
               </div>
 
+              {event?.isTeamEvent && (
+                <>
+                  <hr />
+                  <h3>Team Details</h3>
+                  
+                  <div className="form-group">
+                    <label>Team Name *</label>
+                    <input
+                      className="signup-input"
+                      value={teamName}
+                      onChange={(e) => setTeamName(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <h4>Team Members ({teamMembers.length} of {event.maxTeamSize - 1} max)</h4>
+                  
+                  {teamMembers.map((member, idx) => (
+                    <div key={idx} className="team-member-card">
+                      <h5>Member {idx + 1}</h5>
+                      
+                      <div className="form-group">
+                        <label>Name *</label>
+                        <input
+                          className="signup-input"
+                          value={member.name}
+                          onChange={(e) => handleTeamMemberChange(idx, "name", e.target.value)}
+                          required
+                        />
+                      </div>
+                      
+                      <div className="form-group">
+                        <label>Email *</label>
+                        <input
+                          className="signup-input"
+                          type="email"
+                          value={member.email}
+                          onChange={(e) => handleTeamMemberChange(idx, "email", e.target.value)}
+                          required
+                        />
+                      </div>
+                      
+                      <div className="form-group">
+                        <label>Phone</label>
+                        <input
+                          className="signup-input"
+                          value={member.phone}
+                          onChange={(e) => handleTeamMemberChange(idx, "phone", e.target.value)}
+                        />
+                      </div>
+                      
+                      <div className="form-group">
+                        <label>College</label>
+                        <input
+                          className="signup-input"
+                          value={member.college}
+                          onChange={(e) => handleTeamMemberChange(idx, "college", e.target.value)}
+                        />
+                      </div>
+                      
+                      {teamMembers.length > event.minTeamSize - 1 && (
+                        <button 
+                          type="button" 
+                          className="btn-remove-member"
+                          onClick={() => removeTeamMember(idx)}
+                        >
+                          Remove Member
+                        </button>
+                      )}
+                    </div>
+                  ))}
+
+                  {teamMembers.length < event.maxTeamSize - 1 && (
+                    <button 
+                      type="button" 
+                      className="btn-add-member"
+                      onClick={addTeamMember}
+                    >
+                      + Add Team Member
+                    </button>
+                  )}
+                </>
+              )}
+
               <button type="submit" className="signup-button">
-                Confirm Registration
+                {event?.isTeamEvent ? "Register Team" : "Confirm Registration"}
               </button>
             </form>
           )}

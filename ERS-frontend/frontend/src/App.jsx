@@ -31,6 +31,7 @@ import Profile from "./pages/Profile";
 // ✅ User-only routes
 const UserProtectedRoute = ({ children }) => {
   const token = Cookies.get("token");
+  
   if (!token) return <Navigate to="/login" replace />;
 
   try {
@@ -46,11 +47,15 @@ const UserProtectedRoute = ({ children }) => {
 // ✅ Admin-only routes (Admin or SuperAdmin)
 const AdminProtectedRoute = ({ children }) => {
   const token = Cookies.get("token");
+  
   if (!token) return <Navigate to="/admin/login" replace />;
 
   try {
     const decoded = jwtDecode(token);
-    if (decoded.role === "User") return <Navigate to="/login" replace />;
+    // ✅ Check for proper role format
+    if (!["ADMIN", "SUB_ADMIN", "SUPER_ADMIN"].includes(decoded.role)) {
+      return <Navigate to="/admin/login" replace />;
+    }
     return children;
   } catch (err) {
     Cookies.remove("token");

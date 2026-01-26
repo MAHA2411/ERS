@@ -1,4 +1,3 @@
-// models/Admin.js
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 
@@ -23,14 +22,34 @@ const adminSchema = new mongoose.Schema(
       required: true,
     },
 
-   role: { type: mongoose.Schema.Types.ObjectId, ref: "Role", required: true }
-,
+    role: { 
+      type: mongoose.Schema.Types.ObjectId, 
+      ref: "Role", 
+      required: true 
+    },
+
+    category: {
+      type: String,
+      enum: ["TECH", "NON_TECH", "ALL"],
+      default: "ALL"
+    },
+
+    assignedEvents: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Event"
+    }],
 
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "SuperAdmin",
+      refPath: "createdByModel",
       required: true,
     },
+
+    createdByModel: {
+      type: String,
+      enum: ["SuperAdmin", "Admin"],
+      default: "SuperAdmin"
+    }
   },
   { timestamps: true }
 );
