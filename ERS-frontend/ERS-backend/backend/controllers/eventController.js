@@ -53,7 +53,7 @@ export const getEvents = async (req, res) => {
 
     if (!req.user) {
       // Public browsing
-      events = await Event.find().select("title description date venue fee");
+      events = await Event.find().select("title description date venue fee bannerUrl");
     } else if (req.user.role === "SuperAdmin") {
       events = await Event.find();
     } else {
@@ -76,10 +76,10 @@ export const getRegistrations = async (req, res) => {
     let registrations;
 
     if (req.user.role === "SuperAdmin") {
-      registrations = await Registration.find().populate("eventId", "title date venue createdBy");
+      registrations = await Registration.find().populate("eventId", "title date venue createdBy bannerUrl");
     } else {
       // Admin sees only registrations for their events
-      const allRegs = await Registration.find().populate("eventId", "title date venue createdBy");
+      const allRegs = await Registration.find().populate("eventId", "title date venue createdBy bannerUrl");
       registrations = allRegs.filter(
         (reg) => reg.eventId && reg.eventId.createdBy.toString() === req.user._id.toString()
       );
@@ -103,7 +103,7 @@ export const getMyRegisteredEvents = async (req, res) => {
 
     const registrations = await Registration.find({ user: req.user._id }).populate(
       "eventId",
-      "title description date venue fee"
+      "title description date venue fee bannerUrl"
     );
 
     // Filter out deleted events

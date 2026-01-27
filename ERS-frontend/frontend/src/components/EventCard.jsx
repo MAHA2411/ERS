@@ -37,7 +37,7 @@ const EventCard = ({ event }) => {
   return (
     <div className="event-card">
       <div className="event-image">
-        <img src={event.image || "/images/img-event.jpg"} alt={event.title} />
+        <img src={event.bannerUrl || "/images/img-event.jpg"} alt={event.title} />
       </div>
       <div className="event-details">
         <h3>{event.title}</h3>

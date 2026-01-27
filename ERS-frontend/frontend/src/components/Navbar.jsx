@@ -41,7 +41,7 @@ const Navbar = () => {
   return (
     <nav className="navbar">
       <div className="container">
-        <div className="logo"><Link to="/">EventHub</Link></div>
+        <div className="logo"><Link to="/" style={{ textDecoration: "none" }}>EventHub</Link></div>
         <div className="nav-links">
           <Link to="/">Home</Link>
           <Link to="/events">Events</Link>

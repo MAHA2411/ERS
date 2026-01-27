@@ -45,7 +45,8 @@ const SuperAdminDashboard = () => {
     maxTeamSize: 5,
     capacity: 100,
     assignedAdmin: "",
-    subAdmins: []
+    subAdmins: [],
+    bannerUrl: ""
   });
 
   // SubAdmin form
@@ -100,7 +101,8 @@ const SuperAdminDashboard = () => {
         maxTeamSize: event.maxTeamSize || 5,
         capacity: event.capacity || 100,
         assignedAdmin: event.assignedAdmin?._id || "",
-        subAdmins: event.subAdmins?.map(sa => sa?._id || sa) || []
+        subAdmins: event.subAdmins?.map(sa => sa?._id || sa) || [],
+        bannerUrl: event.bannerUrl || ""
       });
     } else {
       setEditingEvent(null);
@@ -117,7 +119,8 @@ const SuperAdminDashboard = () => {
         maxTeamSize: 5,
         capacity: 100,
         assignedAdmin: "",
-        subAdmins: []
+        subAdmins: [],
+        bannerUrl: ""
       });
     }
     setShowEventModal(true);
@@ -431,6 +434,9 @@ const SuperAdminDashboard = () => {
 
           <label>Description</label>
           <textarea value={eventForm.description} onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}></textarea>
+
+          <label>Banner URL</label>
+          <input type="text" value={eventForm.bannerUrl} onChange={(e) => setEventForm({ ...eventForm, bannerUrl: e.target.value })} placeholder="https://example.com/image.jpg" />
 
           <label>Date & Time</label>
           <input type="datetime-local" value={eventForm.date} onChange={(e) => setEventForm({ ...eventForm, date: e.target.value })} required />

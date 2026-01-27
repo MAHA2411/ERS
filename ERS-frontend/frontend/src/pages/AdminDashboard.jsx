@@ -29,7 +29,7 @@ const AdminDashboard = () => {
 
   const [eventForm, setEventForm] = useState({
     title: "", description: "", date: "", venue: "", category: "TECH",
-    isTeamEvent: false, minTeamSize: 2, maxTeamSize: 5, capacity: 100, fee: 0
+    isTeamEvent: false, minTeamSize: 2, maxTeamSize: 5, capacity: 100, fee: 0, bannerUrl: ""
   });
 
   const [subAdminForm, setSubAdminForm] = useState({
@@ -73,13 +73,15 @@ const AdminDashboard = () => {
         minTeamSize: event.minTeamSize || 2,
         maxTeamSize: event.maxTeamSize || 5,
         capacity: event.capacity || 100,
-        fee: event.fee || 0
+        capacity: event.capacity || 100,
+        fee: event.fee || 0,
+        bannerUrl: event.bannerUrl || ""
       });
     } else {
       setEditingEvent(null);
       setEventForm({
         title: "", description: "", date: "", venue: "", category: "TECH",
-        isTeamEvent: false, minTeamSize: 2, maxTeamSize: 5, capacity: 100, fee: 0
+        isTeamEvent: false, minTeamSize: 2, maxTeamSize: 5, capacity: 100, fee: 0, bannerUrl: ""
       });
     }
     setShowEventModal(true);
@@ -334,42 +336,45 @@ const AdminDashboard = () => {
         <h2>{editingEvent ? "Edit Event" : "Create Event"}</h2>
         <form onSubmit={handleEventSubmit} className="modal-form">
           <label>Title</label>
-          <input type="text" value={eventForm.title} onChange={(e) => setEventForm({...eventForm, title: e.target.value})} required />
+          <input type="text" value={eventForm.title} onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })} required />
 
           <label>Description</label>
-          <textarea value={eventForm.description} onChange={(e) => setEventForm({...eventForm, description: e.target.value})}></textarea>
+          <textarea value={eventForm.description} onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}></textarea>
+
+          <label>Banner URL</label>
+          <input type="text" value={eventForm.bannerUrl || ""} onChange={(e) => setEventForm({ ...eventForm, bannerUrl: e.target.value })} placeholder="Image URL" />
 
           <label>Date & Time</label>
-          <input type="datetime-local" value={eventForm.date} onChange={(e) => setEventForm({...eventForm, date: e.target.value})} required />
+          <input type="datetime-local" value={eventForm.date} onChange={(e) => setEventForm({ ...eventForm, date: e.target.value })} required />
 
           <label>Venue</label>
-          <input type="text" value={eventForm.venue} onChange={(e) => setEventForm({...eventForm, venue: e.target.value})} />
+          <input type="text" value={eventForm.venue} onChange={(e) => setEventForm({ ...eventForm, venue: e.target.value })} />
 
           <label>Category</label>
-          <select value={eventForm.category} onChange={(e) => setEventForm({...eventForm, category: e.target.value})}>
+          <select value={eventForm.category} onChange={(e) => setEventForm({ ...eventForm, category: e.target.value })}>
             <option value="TECH">Tech</option>
             <option value="NON_TECH">Non-Tech</option>
           </select>
 
           <label>
-            <input type="checkbox" checked={eventForm.isTeamEvent} onChange={(e) => setEventForm({...eventForm, isTeamEvent: e.target.checked})} />
+            <input type="checkbox" checked={eventForm.isTeamEvent} onChange={(e) => setEventForm({ ...eventForm, isTeamEvent: e.target.checked })} />
             Team Event
           </label>
 
           {eventForm.isTeamEvent && (
             <>
               <label>Min Team Size</label>
-              <input type="number" value={eventForm.minTeamSize} onChange={(e) => setEventForm({...eventForm, minTeamSize: parseInt(e.target.value)})} min="2" />
+              <input type="number" value={eventForm.minTeamSize} onChange={(e) => setEventForm({ ...eventForm, minTeamSize: parseInt(e.target.value) })} min="2" />
               <label>Max Team Size</label>
-              <input type="number" value={eventForm.maxTeamSize} onChange={(e) => setEventForm({...eventForm, maxTeamSize: parseInt(e.target.value)})} min="2" />
+              <input type="number" value={eventForm.maxTeamSize} onChange={(e) => setEventForm({ ...eventForm, maxTeamSize: parseInt(e.target.value) })} min="2" />
             </>
           )}
 
           <label>Capacity</label>
-          <input type="number" value={eventForm.capacity} onChange={(e) => setEventForm({...eventForm, capacity: parseInt(e.target.value)})} />
+          <input type="number" value={eventForm.capacity} onChange={(e) => setEventForm({ ...eventForm, capacity: parseInt(e.target.value) })} />
 
           <label>Fee</label>
-          <input type="number" value={eventForm.fee} onChange={(e) => setEventForm({...eventForm, fee: parseFloat(e.target.value)})} />
+          <input type="number" value={eventForm.fee} onChange={(e) => setEventForm({ ...eventForm, fee: parseFloat(e.target.value) })} />
 
           <button type="submit" className="btn btn-primary">{editingEvent ? "Update" : "Create"}</button>
         </form>
@@ -379,20 +384,20 @@ const AdminDashboard = () => {
         <h2>{editingSubAdmin ? "Edit Sub-Admin" : "Add Sub-Admin"}</h2>
         <form onSubmit={handleSubAdminSubmit} className="modal-form">
           <label>Name</label>
-          <input type="text" value={subAdminForm.name} onChange={(e) => setSubAdminForm({...subAdminForm, name: e.target.value})} required />
+          <input type="text" value={subAdminForm.name} onChange={(e) => setSubAdminForm({ ...subAdminForm, name: e.target.value })} required />
 
           <label>Email</label>
-          <input type="email" value={subAdminForm.email} onChange={(e) => setSubAdminForm({...subAdminForm, email: e.target.value})} required />
+          <input type="email" value={subAdminForm.email} onChange={(e) => setSubAdminForm({ ...subAdminForm, email: e.target.value })} required />
 
           {!editingSubAdmin && (
             <>
               <label>Password</label>
-              <input type="password" value={subAdminForm.password} onChange={(e) => setSubAdminForm({...subAdminForm, password: e.target.value})} required />
+              <input type="password" value={subAdminForm.password} onChange={(e) => setSubAdminForm({ ...subAdminForm, password: e.target.value })} required />
             </>
           )}
 
           <label>Assign Events</label>
-          <select multiple value={subAdminForm.assignedEvents} onChange={(e) => setSubAdminForm({...subAdminForm, assignedEvents: Array.from(e.target.selectedOptions, o => o.value)})}>
+          <select multiple value={subAdminForm.assignedEvents} onChange={(e) => setSubAdminForm({ ...subAdminForm, assignedEvents: Array.from(e.target.selectedOptions, o => o.value) })}>
             {events.map(evt => (
               <option key={evt._id} value={evt._id}>{evt.title}</option>
             ))}

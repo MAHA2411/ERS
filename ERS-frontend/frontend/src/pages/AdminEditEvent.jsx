@@ -8,7 +8,7 @@ import { toast } from "react-toastify";
 const AdminEditEvent = () => {
   const { id } = useParams();
   const nav = useNavigate();
-  const [form, setForm] = useState({ title: "", date: "", description: "", location: "", capacity: "", image: "" });
+  const [form, setForm] = useState({ title: "", date: "", description: "", location: "", capacity: "", bannerUrl: "" });
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -52,7 +52,8 @@ const AdminEditEvent = () => {
           <textarea name="description" value={form.description} onChange={handleChange} required />
           <input type="text" name="location" value={form.location} onChange={handleChange} required />
           <input type="number" name="capacity" value={form.capacity} onChange={handleChange} required />
-          <input type="text" name="image" value={form.image} onChange={handleChange} />
+          <label>Banner URL</label>
+          <input type="text" name="bannerUrl" value={form.bannerUrl || ""} onChange={handleChange} placeholder="Image URL" />
           <button type="submit" className="btn-gradient">Update Event</button>
         </form>
       </div>
